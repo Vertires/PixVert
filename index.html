@@ -4,64 +4,121 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pixel Chat</title>
-
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDYF7jJSGkpaOCHT6I1206Ye8kojuN9lTk",
-      authDomain: "pixvertfun.firebaseapp.com",
-      databaseURL: "https://pixvertfun-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "pixvertfun",
-      storageBucket: "pixvertfun.firebasestorage.app",
-      messagingSenderId: "828927840529",
-      appId: "1:828927840529:web:b55459b0e4f225a9043cb0",
-      measurementId: "G-8FB9QJ9STW"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-  </script>
-
-  <!-- Other styling and assets -->
   <style>
-    .pixel-grid {
+    #pixel-grid {
       display: grid;
-      grid-template-columns: repeat(10, 50px);
-      grid-gap: 5px;
+      grid-template-columns: repeat(10, 20px);
+      gap: 2px;
     }
-    .pixel {
-      width: 50px;
-      height: 50px;
+    #pixel-grid div {
+      width: 20px;
+      height: 20px;
       border: 1px solid #ccc;
-      background-color: white;
       cursor: pointer;
-    }
-    .chat-box {
-      width: 300px;
-      height: 200px;
-      overflow-y: scroll;
-      border: 1px solid #ccc;
-      margin-top: 20px;
-    }
-    #chatInput {
-      width: 250px;
     }
   </style>
 </head>
 <body>
   <h1>Pixel Chat</h1>
 
-  <div class="pixel-grid" id="pixelGrid"></div>
+  <!-- Chat section -->
+  <div id="chat-container">
+    <input type="text" id="username" placeholder="Enter your username" />
+    <textarea id="message" placeholder="Type your message"></textarea>
+    <button onclick="sendMessage()">Send</button>
 
-  <div class="chat-box" id="chatBox"></div>
+    <div id="chat-box"></div>
+  </div>
 
-  <input type="text" id="chatInput" placeholder="Enter message...">
-  <button id="sendMessage">Send</button>
+  <!-- Color Picker -->
+  <div>
+    <input type="color" id="color-picker" />
+  </div>
 
-  <!-- Your custom script -->
-  <script src="script.js"></script>
+  <!-- Pixel Grid -->
+  <div id="pixel-grid"></div>
+
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+    apiKey: "AIzaSyDYF7jJSGkpaOCHT6I1206Ye8kojuN9lTk",
+    authDomain: "pixvertfun.firebaseapp.com",
+    databaseURL: "https://pixvertfun-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "pixvertfun",
+    storageBucket: "pixvertfun.firebasestorage.app",
+    messagingSenderId: "828927840529",
+    appId: "1:828927840529:web:b55459b0e4f225a9043cb0",
+    measurementId: "G-8FB9QJ9STW"
+  };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Chat system
+    function sendMessage() {
+      const username = document.getElementById('username').value;
+      const message = document.getElementById('message').value;
+
+      if (username && message) {
+        const chatRef = ref(database, 'chat/messages');
+        const newMessageRef = push(chatRef);
+        set(newMessageRef, {
+          username: username,
+          message: message,
+          timestamp: Date.now()
+        });
+
+        document.getElementById('message').value = '';  // Clear message input
+      }
+    }
+
+    // Display chat messages
+    const chatRef = ref(database, 'chat/messages');
+    onValue(chatRef, (snapshot) => {
+      const messages = snapshot.val();
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerHTML = '';  // Clear chat box
+      for (const messageId in messages) {
+        const message = messages[messageId];
+        chatBox.innerHTML += `<p><strong>${message.username}:</strong> ${message.message}</p>`;
+      }
+    });
+
+    // Pixel grid and color picker
+    const colorPicker = document.getElementById('color-picker');
+    const pixelGrid = document.getElementById('pixel-grid');
+
+    // Generate 100 pixel divs
+    for (let i = 0; i < 100; i++) {
+      const pixel = document.createElement('div');
+      pixel.onclick = () => placePixel(i);
+      pixelGrid.appendChild(pixel);
+    }
+
+    // Place a pixel (store in Firebase)
+    function placePixel(index) {
+      const color = colorPicker.value;
+      const pixelRef = ref(database, 'pixels/' + index);
+      set(pixelRef, { color: color });
+
+      // Update the UI (pixel grid)
+      const pixels = pixelGrid.children;
+      pixels[index].style.backgroundColor = color;
+    }
+
+    // Load pixels from Firebase and display
+    const pixelsRef = ref(database, 'pixels');
+    onValue(pixelsRef, (snapshot) => {
+      const pixels = snapshot.val();
+      for (let index in pixels) {
+        const color = pixels[index].color;
+        pixelGrid.children[index].style.backgroundColor = color;
+      }
+    });
+  </script>
 </body>
 </html>
