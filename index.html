@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Grid with Chat</title>
+  <style>
+    /* Basic CSS styles */
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    #pixelCanvas {
+      border: 1px solid black;
+      cursor: pointer;
+    }
+
+    #chatBox {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: scroll;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    #chatInput {
+      width: 80%;
+      padding: 5px;
+    }
+
+    #sendButton {
+      padding: 5px 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Pixel Grid with Chat</h1>
+
+  <canvas id="pixelCanvas" width="600" height="600"></canvas>
+  
+  <div id="chatBox"></div>
+  
+  <input type="text" id="chatInput" placeholder="Type a message">
+  <button id="sendButton">Send</button>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js"></script>
+
+  <script>
+    // Your Firebase configuration (use your actual credentials here)
+    const firebaseConfig = {
+    apiKey: "AIzaSyDYF7jJSGkpaOCHT6I1206Ye8kojuN9lTk",
+    authDomain: "pixvertfun.firebaseapp.com",
+    databaseURL: "https://pixvertfun-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "pixvertfun",
+    storageBucket: "pixvertfun.firebasestorage.app",
+    messagingSenderId: "828927840529",
+    appId: "1:828927840529:web:b55459b0e4f225a9043cb0",
+    measurementId: "G-8FB9QJ9STW"
+  };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
+
+    // Initialize Canvas and Chat
+    const canvas = document.getElementById('pixelCanvas');
+    const ctx = canvas.getContext('2d');
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const sendButton = document.getElementById('sendButton');
+
+    const gridSize = 12000; // 12k x 12k grid
+    let selectedColor = "#000000"; // Default color
+
+    // Listen for pixel updates
+    canvas.addEventListener("click", (e) => {
+      const x = Math.floor(e.offsetX / 5);
+      const y = Math.floor(e.offsetY / 5);
+      ctx.fillStyle = selectedColor;
+      ctx.fillRect(x * 5, y * 5, 5, 5);
+
+      // Save the pixel to Firebase
+      const pixelRef = database.ref(`pixels/${x}/${y}`);
+      pixelRef.set({ color: selectedColor });
+    });
+
+    // Load chat messages
+    function loadChat() {
+      const chatRef = database.ref('chat');
+      chatRef.on('value', (snapshot) => {
+        const messages = snapshot.val() || [];
+        chatBox.innerHTML = '';
+        messages.forEach((message) => {
+          const messageElement = document.createElement('div');
+          messageElement.textContent = message;
+          chatBox.appendChild(messageElement);
+        });
+      });
+    }
+
+    // Send chat message
+    sendButton.addEventListener("click", () => {
+      const message = chatInput.value.trim();
+      if (message) {
+        const chatRef = database.ref('chat');
+        chatRef.push(message); // Save the message to Firebase
+        chatInput.value = ''; // Clear the input field
+      }
+    });
+
+    // Load chat on page load
+    loadChat();
+
+    // Listen for pixel updates
+    const pixelRef = database.ref('pixels');
+    pixelRef.on('child_added', (snapshot) => {
+      const { x, y, color } = snapshot.val();
+      ctx.fillStyle = color;
+      ctx.fillRect(x * 5, y * 5, 5, 5);
+    });
+
+  </script>
+
+</body>
+</html>
