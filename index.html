@@ -1,56 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pixel Grid with Chat</title>
-  <style>
-    /* Basic CSS styles */
-    body {
-      font-family: Arial, sans-serif;
-    }
-
-    #pixelCanvas {
-      border: 1px solid black;
-      cursor: pointer;
-    }
-
-    #chatBox {
-      margin-top: 20px;
-      max-height: 200px;
-      overflow-y: scroll;
-      border: 1px solid #ccc;
-      padding: 10px;
-    }
-
-    #chatInput {
-      width: 80%;
-      padding: 5px;
-    }
-
-    #sendButton {
-      padding: 5px 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Chat</title>
+    <style>
+        /* Basic styling for grid and chat */
+        .pixel-grid {
+            display: grid;
+            grid-template-columns: repeat(50, 20px); /* 50 columns */
+            gap: 2px;
+            margin-bottom: 20px;
+        }
+        .pixel {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        #chat-box {
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .chat-message {
+            margin: 5px 0;
+        }
+        .color-button {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
+    <h1>Pixel Art Chat</h1>
+    
+    <div id="pixel-grid" class="pixel-grid"></div>
 
-  <h1>Pixel Grid with Chat</h1>
+    <h2>Chat</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="chat-input" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
 
-  <canvas id="pixelCanvas" width="600" height="600"></canvas>
-  
-  <div id="chatBox"></div>
-  
-  <input type="text" id="chatInput" placeholder="Type a message">
-  <button id="sendButton">Send</button>
+    <h3>Choose a Color</h3>
+    <div>
+        <button class="color-button" style="background-color: #FF0000;" onclick="selectColor('#FF0000')"></button>
+        <button class="color-button" style="background-color: #00FF00;" onclick="selectColor('#00FF00')"></button>
+        <button class="color-button" style="background-color: #0000FF;" onclick="selectColor('#0000FF')"></button>
+        <button class="color-button" style="background-color: #FFFF00;" onclick="selectColor('#FFFF00')"></button>
+        <button class="color-button" style="background-color: #FF00FF;" onclick="selectColor('#FF00FF')"></button>
+        <button class="color-button" style="background-color: #00FFFF;" onclick="selectColor('#00FFFF')"></button>
+        <button class="color-button" style="background-color: #000000;" onclick="selectColor('#000000')"></button>
+        <button class="color-button" style="background-color: #FFFFFF;" onclick="selectColor('#FFFFFF')"></button>
+        <button class="color-button" style="background-color: #808080;" onclick="selectColor('#808080')"></button>
+        <button class="color-button" style="background-color: #C0C0C0;" onclick="selectColor('#C0C0C0')"></button>
+    </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"></script>
 
-  <script>
-    // Your Firebase configuration (use your actual credentials here)
-    const firebaseConfig = {
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
     apiKey: "AIzaSyDYF7jJSGkpaOCHT6I1206Ye8kojuN9lTk",
     authDomain: "pixvertfun.firebaseapp.com",
     databaseURL: "https://pixvertfun-default-rtdb.europe-west1.firebasedatabase.app",
@@ -61,68 +75,61 @@
     measurementId: "G-8FB9QJ9STW"
   };
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database(app);
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    // Initialize Canvas and Chat
-    const canvas = document.getElementById('pixelCanvas');
-    const ctx = canvas.getContext('2d');
-    const chatBox = document.getElementById('chatBox');
-    const chatInput = document.getElementById('chatInput');
-    const sendButton = document.getElementById('sendButton');
+        // Set up initial variables
+        let selectedColor = '#000000';  // Default color is black
+        const gridSize = 12;  // 12x12 grid
+        const pixelGrid = document.getElementById('pixel-grid');
+        const chatBox = document.getElementById('chat-box');
 
-    const gridSize = 12000; // 12k x 12k grid
-    let selectedColor = "#000000"; // Default color
+        // Create the grid (12x12)
+        for (let i = 0; i < gridSize * gridSize; i++) {
+            const pixel = document.createElement('div');
+            pixel.classList.add('pixel');
+            pixel.addEventListener('click', () => placePixel(i));
+            pixelGrid.appendChild(pixel);
+        }
 
-    // Listen for pixel updates
-    canvas.addEventListener("click", (e) => {
-      const x = Math.floor(e.offsetX / 5);
-      const y = Math.floor(e.offsetY / 5);
-      ctx.fillStyle = selectedColor;
-      ctx.fillRect(x * 5, y * 5, 5, 5);
-
-      // Save the pixel to Firebase
-      const pixelRef = database.ref(`pixels/${x}/${y}`);
-      pixelRef.set({ color: selectedColor });
-    });
-
-    // Load chat messages
-    function loadChat() {
-      const chatRef = database.ref('chat');
-      chatRef.on('value', (snapshot) => {
-        const messages = snapshot.val() || [];
-        chatBox.innerHTML = '';
-        messages.forEach((message) => {
-          const messageElement = document.createElement('div');
-          messageElement.textContent = message;
-          chatBox.appendChild(messageElement);
+        // Listen for pixel updates from Firebase
+        db.ref('pixels').on('value', (snapshot) => {
+            const pixels = snapshot.val() || {};
+            Object.keys(pixels).forEach(index => {
+                const pixel = pixelGrid.children[index];
+                pixel.style.backgroundColor = pixels[index];
+            });
         });
-      });
-    }
 
-    // Send chat message
-    sendButton.addEventListener("click", () => {
-      const message = chatInput.value.trim();
-      if (message) {
-        const chatRef = database.ref('chat');
-        chatRef.push(message); // Save the message to Firebase
-        chatInput.value = ''; // Clear the input field
-      }
-    });
+        // Place a pixel in the grid
+        function placePixel(index) {
+            db.ref('pixels/' + index).set(selectedColor);
+        }
 
-    // Load chat on page load
-    loadChat();
+        // Select a color
+        function selectColor(color) {
+            selectedColor = color;
+        }
 
-    // Listen for pixel updates
-    const pixelRef = database.ref('pixels');
-    pixelRef.on('child_added', (snapshot) => {
-      const { x, y, color } = snapshot.val();
-      ctx.fillStyle = color;
-      ctx.fillRect(x * 5, y * 5, 5, 5);
-    });
+        // Send a chat message
+        function sendMessage() {
+            const message = document.getElementById('chat-input').value;
+            if (message.trim()) {
+                db.ref('chat').push({ message: message, timestamp: Date.now() });
+                document.getElementById('chat-input').value = '';  // Clear input field
+            }
+        }
 
-  </script>
-
+        // Listen for chat updates from Firebase
+        db.ref('chat').limitToLast(10).on('child_added', (snapshot) => {
+            const chatData = snapshot.val();
+            const chatMessage = document.createElement('div');
+            chatMessage.classList.add('chat-message');
+            chatMessage.textContent = chatData.message;
+            chatBox.appendChild(chatMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to bottom
+        });
+    </script>
 </body>
 </html>
