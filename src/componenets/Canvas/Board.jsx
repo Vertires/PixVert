@@ -28,13 +28,20 @@ function Board({userData}) {
             alert("You are not authorized to reset")
         }
     }
-
     function CanvasListener() {
-        const dbRef = ref(realtime, "6400_board")
+        const dbRef = ref(realtime, "6400_board");
         onValue(dbRef, (snapshot) => {
-            const data = Object.values(snapshot.val())
-            setColorMap(data)
-            setLoading(false) 
+            const data = snapshot.val();
+            
+            if (data) {
+                const values = Object.values(data);
+                setColorMap(values);
+            } else {
+                // If no data exists, set an empty array or handle as needed
+                setColorMap([]);
+            }
+            
+            setLoading(false);
         });
     }
 
