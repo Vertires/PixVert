@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable array-callback-return */
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { WriteData } from '../../utils/fb_funcs';
 import realtime from '../../config/fb_config';
@@ -9,71 +7,70 @@ import Square from './Square';
 import Tools from '../Tools/Tools';
 import { TransformWrapper, TransformComponent } from "@tiendeo/react-zoom-pan-pinch";
 
-function Board({userData}) {
+function Board({ userData }) {
     const range = [...Array(6400).keys()];
     const [currentColor, setCurrentColor] = useState(colors.c1);
-    const [colorMap, setColorMap] = useState([])
+    const [colorMap, setColorMap] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    function initCanvas(){
-        if (userData.uid==="Mtmma7pFXpWJsFEeIAUbN22aZkB3") {
+    function initCanvas() {
+        if (userData.uid === "Mtmma7pFXpWJsFEeIAUbN22aZkB3") {
             range.map((n) => {
-                WriteData(realtime,`6400_board/${n}`,{
+                WriteData(realtime, `6400_board/${n}`, {
                     id: n,
                     color: "white",
                     lastModifier: "",
-                })
-            })
-        }else{
-            alert("You are not authorized to reset")
+                });
+            });
+        } else {
+            alert("You are not authorized to reset");
         }
     }
+
     function CanvasListener() {
         const dbRef = ref(realtime, "6400_board");
         onValue(dbRef, (snapshot) => {
             const data = snapshot.val();
-            
+
             if (data) {
                 const values = Object.values(data);
                 setColorMap(values);
             } else {
-                // If no data exists, set an empty array or handle as needed
                 setColorMap([]);
             }
-            
+
             setLoading(false);
         });
     }
 
-    function updateSquare(id, color){
-        WriteData(realtime,`6400_board/${id}`,{
+    function updateSquare(id, color) {
+        WriteData(realtime, `6400_board/${id}`, {
             id: id,
             color: color,
             lastModifierEmail: userData.email,
             lastModifierUID: userData.uid,
-        })
+        });
     }
 
     function SquareColorize(color) {
         let r = document.querySelector(':root');
         r.style.setProperty('--squareBgColor', color);
-        setCurrentColor(color)
+        setCurrentColor(color);
     }
 
     useEffect(() => {
-        CanvasListener()
-    }, [loading])
+        CanvasListener();
+    }, [loading]);
 
-    
     if (loading) {
-        return(
+        return (
             <div className="Loading">
                 <div className="Loading_Text">Loading...</div>
             </div>
-        )
+        );
     }
-    
-    return(
+
+    return (
         <TransformWrapper
             limitToBounds={false}
             minScale={0}
@@ -86,16 +83,23 @@ function Board({userData}) {
             <TransformComponent>
                 <div className="Board">
                     <div className="Canvas">
-                        { colorMap.map((val,key)=>{
-                            return (
-                                <Square upadateSquare={()=>updateSquare(val.id,currentColor)} key={key} id={val.id} color={val.color} />
-                            )
-                        })}
+                        {colorMap.length > 0 ? (
+                            colorMap.map((val, key) => (
+                                <Square
+                                    upadateSquare={() => updateSquare(val.id, currentColor)}
+                                    key={key}
+                                    id={val.id}
+                                    color={val.color}
+                                />
+                            ))
+                        ) : (
+                            <div className="CanvasError">No data available</div>
+                        )}
                     </div>
                 </div>
             </TransformComponent>
         </TransformWrapper>
-    )
+    );
 }
 
 export default Board;
