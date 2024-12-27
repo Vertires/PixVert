@@ -3,47 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pixel Chat</title>
+  <title>Pixel Grid</title>
   <style>
-    #pixel-grid {
-      display: grid;
-      grid-template-columns: repeat(10, 20px);
-      gap: 2px;
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #f0f0f0;
     }
-    #pixel-grid div {
-      width: 20px;
-      height: 20px;
-      border: 1px solid #ccc;
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 0 auto;
+    }
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .color-button {
+      width: 30px;
+      height: 30px;
+      margin: 5px;
+      border-radius: 5px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Pixel Chat</h1>
-  <h1>also hi aled</h1>
-  <!-- Chat section -->
-  <div id="chat-container">
-    <input type="text" id="username" placeholder="Enter your username" />
-    <textarea id="message" placeholder="Type your message"></textarea>
+  <canvas id="pixelCanvas"></canvas>
+  <div class="controls">
+    <div id="colorButtons"></div>
+    <button onclick="toggleChat()">Toggle Chat</button>
+  </div>
+  <div id="chatBox" style="position: fixed; bottom: 80px; right: 20px; width: 300px; height: 400px; background: rgba(0,0,0,0.5); color: white; display: none;">
+    <textarea id="chatMessages" style="width: 100%; height: 80%;"></textarea>
+    <input type="text" id="chatInput" placeholder="Type a message" style="width: 100%;">
     <button onclick="sendMessage()">Send</button>
-
-    <div id="chat-box"></div>
   </div>
 
-  <!-- Color Picker -->
-  <div>
-    <input type="color" id="color-picker" />
-  </div>
+  <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"></script>
 
-  <!-- Pixel Grid -->
-  <div id="pixel-grid"></div>
-
-  <script type="module">
-    // Import Firebase modules
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-
-    // Firebase configuration
+  <script>
+    // Firebase Configuration (replace with your own config)
     const firebaseConfig = {
     apiKey: "AIzaSyDYF7jJSGkpaOCHT6I1206Ye8kojuN9lTk",
     authDomain: "pixvertfun.firebaseapp.com",
@@ -55,70 +60,139 @@
     measurementId: "G-8FB9QJ9STW"
   };
 
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-    // Chat system
+    const canvas = document.getElementById("pixelCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let gridSize = 12000; // 12k x 12k grid
+    let zoomLevel = 1;
+    let selectedColor = "#000000";
+    let scrollX = 0, scrollY = 0;
+
+    // Set canvas size to match grid
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Draw the grid only for visible pixels
+    function drawVisibleGrid() {
+      const gridCellSize = 5; // Each cell will be 5px
+      const visibleWidth = canvas.width / zoomLevel;
+      const visibleHeight = canvas.height / zoomLevel;
+
+      const startX = Math.floor(scrollX / gridCellSize);
+      const startY = Math.floor(scrollY / gridCellSize);
+
+      const endX = Math.min(startX + Math.ceil(visibleWidth / gridCellSize), gridSize / gridCellSize);
+      const endY = Math.min(startY + Math.ceil(visibleHeight / gridCellSize), gridSize / gridCellSize);
+
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the visible pixels
+      for (let x = startX; x < endX; x++) {
+        for (let y = startY; y < endY; y++) {
+          const pixelRef = database.ref(`pixels/${x}/${y}`);
+          pixelRef.once('value').then(snapshot => {
+            const pixelData = snapshot.val();
+            if (pixelData && pixelData.color) {
+              ctx.fillStyle = pixelData.color;
+              ctx.fillRect((x - startX) * gridCellSize, (y - startY) * gridCellSize, gridCellSize, gridCellSize);
+            }
+          });
+        }
+      }
+    }
+
+    // Set up zooming
+    canvas.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      if (event.deltaY < 0) {
+        zoomLevel = Math.min(zoomLevel * 1.1, 10);
+      } else {
+        zoomLevel = Math.max(zoomLevel / 1.1, 0.1);
+      }
+      drawVisibleGrid();
+    });
+
+    // Handle scrolling
+    canvas.addEventListener('mousedown', (event) => {
+      const startX = event.clientX;
+      const startY = event.clientY;
+
+      function onMouseMove(event) {
+        scrollX += (startX - event.clientX);
+        scrollY += (startY - event.clientY);
+        drawVisibleGrid();
+      }
+
+      function onMouseUp() {
+        canvas.removeEventListener('mousemove', onMouseMove);
+        canvas.removeEventListener('mouseup', onMouseUp);
+      }
+
+      canvas.addEventListener('mousemove', onMouseMove);
+      canvas.addEventListener('mouseup', onMouseUp);
+    });
+
+    // Select color from buttons
+    function createColorButtons() {
+      const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#000000', '#FFFFFF', '#888888', '#FF8800'];
+      const colorButtonsDiv = document.getElementById("colorButtons");
+      colors.forEach(color => {
+        const button = document.createElement("button");
+        button.className = "color-button";
+        button.style.backgroundColor = color;
+        button.onclick = () => selectedColor = color;
+        colorButtonsDiv.appendChild(button);
+      });
+    }
+
+    // Draw on canvas
+    canvas.addEventListener("click", (e) => {
+      const x = (e.offsetX + scrollX) / zoomLevel;
+      const y = (e.offsetY + scrollY) / zoomLevel;
+      const gridCellSize = 5;
+      ctx.fillStyle = selectedColor;
+      ctx.fillRect(Math.floor(x / gridCellSize) * gridCellSize, Math.floor(y / gridCellSize) * gridCellSize, gridCellSize, gridCellSize);
+      savePixelData(Math.floor(x / gridCellSize), Math.floor(y / gridCellSize), selectedColor);
+    });
+
+    // Save pixel data to Firebase
+    function savePixelData(x, y, color) {
+      const pixelRef = database.ref(`pixels/${x}/${y}`);
+      pixelRef.set({ color });
+    }
+
+    // Chat functionality
+    let chatVisible = false;
+    function toggleChat() {
+      chatVisible = !chatVisible;
+      document.getElementById("chatBox").style.display = chatVisible ? "block" : "none";
+    }
+
     function sendMessage() {
-      const username = document.getElementById('username').value;
-      const message = document.getElementById('message').value;
-
-      if (username && message) {
-        const chatRef = ref(database, 'chat/messages');
-        const newMessageRef = push(chatRef);
-        set(newMessageRef, {
-          username: username,
-          message: message,
-          timestamp: Date.now()
-        });
-
-        document.getElementById('message').value = '';  // Clear message input
+      const message = document.getElementById("chatInput").value;
+      if (message) {
+        const chatRef = database.ref("chat");
+        chatRef.push({ message });
+        document.getElementById("chatInput").value = "";
       }
     }
 
-    // Display chat messages
-    const chatRef = ref(database, 'chat/messages');
-    onValue(chatRef, (snapshot) => {
-      const messages = snapshot.val();
-      const chatBox = document.getElementById('chat-box');
-      chatBox.innerHTML = '';  // Clear chat box
-      for (const messageId in messages) {
-        const message = messages[messageId];
-        chatBox.innerHTML += `<p><strong>${message.username}:</strong> ${message.message}</p>`;
-      }
+    // Listen for new messages
+    const chatMessagesRef = database.ref("chat");
+    chatMessagesRef.on("child_added", (snapshot) => {
+      const message = snapshot.val().message;
+      const chatMessages = document.getElementById("chatMessages");
+      chatMessages.value += message + "\n";
+      chatMessages.scrollTop = chatMessages.scrollHeight;
     });
 
-    // Pixel grid and color picker
-    const colorPicker = document.getElementById('color-picker');
-    const pixelGrid = document.getElementById('pixel-grid');
-
-    // Generate 100 pixel divs
-    for (let i = 0; i < 100; i++) {
-      const pixel = document.createElement('div');
-      pixel.onclick = () => placePixel(i);
-      pixelGrid.appendChild(pixel);
-    }
-
-    // Place a pixel (store in Firebase)
-    function placePixel(index) {
-      const color = colorPicker.value;
-      const pixelRef = ref(database, 'pixels/' + index);
-      set(pixelRef, { color: color });
-
-      // Update the UI (pixel grid)
-      const pixels = pixelGrid.children;
-      pixels[index].style.backgroundColor = color;
-    }
-
-    // Load pixels from Firebase and display
-    const pixelsRef = ref(database, 'pixels');
-    onValue(pixelsRef, (snapshot) => {
-      const pixels = snapshot.val();
-      for (let index in pixels) {
-        const color = pixels[index].color;
-        pixelGrid.children[index].style.backgroundColor = color;
-      }
-    });
+    // Initialize the grid and color buttons
+    createColorButtons();
+    drawVisibleGrid();
   </script>
 </body>
 </html>
