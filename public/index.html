@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art with Chat and Usernames</title>
+    <style>
+        /* Same styles as before */
+    </style>
+</head>
+<body>
+    <div id="user-count">Connected Users: 0</div>
+    <div id="username-prompt">
+        <input type="text" id="username-input" placeholder="Enter your username">
+        <button id="set-username">Set Username</button>
+    </div>
+    <div id="container" style="display: none;">
+        <div id="color-buttons">
+            <button class="color-button" style="background-color: red;" data-color="red"></button>
+            <button class="color-button" style="background-color: blue;" data-color="blue"></button>
+            <button class="color-button" style="background-color: green;" data-color="green"></button>
+            <button class="color-button" style="background-color: yellow;" data-color="yellow"></button>
+            <button class="color-button" style="background-color: black;" data-color="black"></button>
+        </div>
+        <canvas id="canvas" width="500" height="500"></canvas>
+        <div id="chat">
+            <div id="messages"></div>
+            <form id="message-form">
+                <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const colorButtons = document.querySelectorAll('.color-button');
+        const userCountElement = document.getElementById('user-count');
+        const messages = document.getElementById('messages');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const usernamePrompt = document.getElementById('username-prompt');
+        const usernameInput = document.getElementById('username-input');
+        const setUsernameButton = document.getElementById('set-username');
+        const container = document.getElementById('container');
+        const pixelSize = 10;
+
+        let currentColor = 'black'; // Default color
+        let username = null;
+
+        // Update current color when a button is clicked
+        colorButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                currentColor = button.dataset.color;
+            });
+        });
+
+// Set username
+setUsernameButton.addEventListener('click', () => {
+    const name = usernameInput.value.trim();
+    if (name) {
+        socket.emit('setUsername', name); // Send username to server
+    } else {
+        alert("Please enter a valid username.");
+    }
+});
+
+// Hide username prompt after setting
+socket.on('usernameSet', (name) => {
+    username = name;
+    usernamePrompt.style.display = 'none'; // Hide the username prompt
+    container.style.display = 'flex'; // Show the main interface
+});
+
+
+        // Update user count
+        socket.on('userCount', (count) => {
+            userCountElement.textContent = `Connected Users: ${count}`;
+        });
+
+        // Draw existing canvas
+        socket.on('canvas', (data) => {
+            for (const key in data) {
+                const [x, y] = key.split(',').map(Number);
+                ctx.fillStyle = data[key];
+                ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+            }
+        });
+
+        // Update pixels in real-time
+        socket.on('updatePixel', (data) => {
+            ctx.fillStyle = data.color;
+            ctx.fillRect(data.x * pixelSize, data.y * pixelSize, pixelSize, pixelSize);
+        });
+
+        // Handle chat messages
+        socket.on('chatMessage', ({ username, message }) => {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${username}: ${message}`;
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight; // Scroll to the latest message
+        });
+
+        // Send chat messages
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (message) {
+                socket.emit('chatMessage', message);
+                messageInput.value = '';
+            }
+        });
+
+        // Handle user clicks
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / pixelSize);
+            const y = Math.floor((e.clientY - rect.top) / pixelSize);
+            socket.emit('placePixel', { x, y, color: currentColor });
+        });
+    </script>
+</body>
+</html>
