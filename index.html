@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Chat</title>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDYF7jJSGkpaOCHT6I1206Ye8kojuN9lTk",
+      authDomain: "pixvertfun.firebaseapp.com",
+      databaseURL: "https://pixvertfun-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pixvertfun",
+      storageBucket: "pixvertfun.firebasestorage.app",
+      messagingSenderId: "828927840529",
+      appId: "1:828927840529:web:b55459b0e4f225a9043cb0",
+      measurementId: "G-8FB9QJ9STW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+
+  <!-- Other styling and assets -->
+  <style>
+    .pixel-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 50px);
+      grid-gap: 5px;
+    }
+    .pixel {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      background-color: white;
+      cursor: pointer;
+    }
+    .chat-box {
+      width: 300px;
+      height: 200px;
+      overflow-y: scroll;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+    #chatInput {
+      width: 250px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pixel Chat</h1>
+
+  <div class="pixel-grid" id="pixelGrid"></div>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <input type="text" id="chatInput" placeholder="Enter message...">
+  <button id="sendMessage">Send</button>
+
+  <!-- Your custom script -->
+  <script src="script.js"></script>
+</body>
+</html>
