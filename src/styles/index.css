@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Microbe&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Press Start 2P', cursive;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+:root{
+  --squareBgColor: #ff4500;
+  --textColor: whitesmoke;
+}
+
+.Container{
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: rgb(4, 49, 126);
+}
+
+.Board{
+  width: 100vw;
+  height: 100vh;
+  margin-top: 10vh;
+}
+
+/* Canvas */
+.Canvas{
+  width: 90vh;
+  height: 90vh;
+  display: grid;
+  margin: 0 auto;
+  grid-template-columns: repeat(80,1fr);
+  grid-template-rows: repeat(80,1fr);
+}
+
+/* Loading */
+.Loading{
+  width:80vh;
+  height:80vh;
+  display: grid;
+  place-items: center;
+}
+.Loading_Text{
+  font-size: 2em;
+  color: var(--textColor);
+}
+
+/* Square */
+.Square{
+  border: 1px solid #07070714;
+}
+.Square:hover{
+  background-color: var(--squareBgColor) !important;
+}
+
+.Profile{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 5px;
+  align-items: center;  
+  justify-content: center;
+  color: var(--textColor);
+}
+
+.Profile .Btn {
+  color: var(--textColor);
+}
+
+.Tools{
+  display: grid;
+  place-items: center;
+  position: sticky;
+  top: 0;
+  padding: 5px;
+  width: 100%;
+  color: var(--textColor);
+  background-color: rgb(19, 78, 181);
+}
+
+.Auth-Button{
+  border: none;
+  color: var(--textColor);
+  background-color: transparent;
+  width: 100%;
+  font-size: 1em;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.Palette{
+  display:flex;
+  justify-content: center;
+  padding: 5px;
+}
+.Palette-item{
+  margin: 2px;
+  width: 15px;
+  height: 15px;
+  border: 1px solid rgb(24, 41, 136);
+  border-radius: 50%;
+}
+
