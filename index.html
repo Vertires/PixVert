@@ -85,9 +85,9 @@
 <body>
     <div class="container">
         <h1>Enter Your Text</h1>
-        <input type="text" id="firstInput" placeholder="Enter first text (e.g. Hello)">
-        <input type="text" id="secondInput" placeholder="Enter second text (e.g. World!)">
-        <button onclick="startAnimation()">Play Animation</button>
+        <input type="text" id="firstInput" placeholder="Enter first text (e.g. Labas Simonai)">
+        <input type="text" id="secondInput" placeholder="Enter second text (e.g. Tu esi gejus)">
+        <button id="playButton" onclick="startAnimation()">Play Animation</button>
     </div>
 
     <div class="text" id="first-text"></div>
@@ -99,23 +99,37 @@
             const firstText = document.getElementById("firstInput").value;
             const secondText = document.getElementById("secondInput").value;
 
+            // Hide the "Play Animation" button
+            document.getElementById("playButton").style.display = 'none';
+
             // Set the custom text to the elements
             document.getElementById("first-text").textContent = firstText;
             document.getElementById("second-text").textContent = secondText;
 
-            // Trigger the animation by making the text visible
-            document.getElementById("first-text").style.opacity = 1;
+            // Display the second text for 1 second before starting the animation
             document.getElementById("second-text").style.opacity = 1;
 
-            // Restart the animation by removing and re-adding the animation class
-            document.getElementById("first-text").style.animation = 'none';
-            document.getElementById("second-text").style.animation = 'none';
-
-            // Trigger the animations again after a short delay
+            // After 1 second, start the animation for both texts
             setTimeout(() => {
-                document.getElementById("first-text").style.animation = 'moveIn 6s forwards';
-                document.getElementById("second-text").style.animation = 'moveIn 6s 2s forwards';
-            }, 50);
+                // Trigger the animation by making the text visible
+                document.getElementById("first-text").style.opacity = 1;
+                document.getElementById("second-text").style.opacity = 1;
+
+                // Restart the animation by removing and re-adding the animation class
+                document.getElementById("first-text").style.animation = 'none';
+                document.getElementById("second-text").style.animation = 'none';
+
+                // Trigger the animations again after a short delay
+                setTimeout(() => {
+                    document.getElementById("first-text").style.animation = 'moveIn 6s forwards';
+                    document.getElementById("second-text").style.animation = 'moveIn 6s 2s forwards';
+                }, 50);
+            }, 1000); // 1 second delay before animation starts
+
+            // Show the "Play Animation" button after 7 seconds (end of animation)
+            setTimeout(() => {
+                document.getElementById("playButton").style.display = 'inline-block';
+            }, 7000); // Adjust the timing based on the animation duration
         }
     </script>
 </body>
