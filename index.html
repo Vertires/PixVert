@@ -11,45 +11,56 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            background-color: #1a1a1a;
+            overflow: hidden;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
         }
 
         .text {
             position: absolute;
-            font-size: 2rem;
+            font-size: 3rem;
             font-weight: bold;
+            color: white;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5);
             opacity: 0;
-            animation: moveIn 3s forwards;
         }
 
         @keyframes moveIn {
             0% {
-                transform: translateX(-100%);
+                transform: translateX(-100vw);
                 opacity: 0;
             }
             50% {
-                transform: translateX(0);
+                transform: translateX(50vw);
                 opacity: 1;
             }
             100% {
-                opacity: 1;
+                transform: translateX(100vw);
+                opacity: 0;
             }
         }
 
-        .second-text {
-            animation: moveIn 3s 2s forwards;
+        #first-text {
+            top: 20%;
+            animation: moveIn 6s forwards;
         }
+
+        #second-text {
+            bottom: 20%;
+            animation: moveIn 6s 2s forwards;
+        }
+
     </style>
 </head>
 <body>
     <div class="text" id="first-text">Labas Simonai</div>
-    <div class="text second-text" id="second-text">Tu esi gejus</div>
+    <div class="text" id="second-text">Tu esi gejus</div>
 
     <script>
+        // The second text appears after 2 seconds
         setTimeout(function() {
             document.getElementById("second-text").style.opacity = 1;
-        }, 2000); // Wait for 2 seconds before showing the second text
+        }, 2000); 
     </script>
 </body>
 </html>
