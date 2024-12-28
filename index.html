@@ -3,155 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Square Race Game</title>
+    <title>Rotating Circles with Ball</title>
     <style>
         body {
             margin: 0;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #1a1a1a;
         }
         canvas {
-            background-color: #333;
-            border: 2px solid black;
-        }
-        #guessButtons {
-            position: absolute;
-            top: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        button {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
+            border: 2px solid #fff;
         }
     </style>
 </head>
 <body>
-    <div id="guessButtons">
-        <button onclick="startRace('red')">Red Square</button>
-        <button onclick="startRace('green')">Green Square</button>
-        <button onclick="startRace('blue')">Blue Square</button>
-        <button onclick="startRace('yellow')">Yellow Square</button>
-    </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let raceStarted = false;
-        let winner = null;
-        let playerGuess = null;
-
-// Add velocity to each square
-const squares = {
-    red: { x: 50, y: 50, color: 'red', speed: Math.random() * 2 + 2, velocityX: Math.random() * 2 + 2 },
-    green: { x: 50, y: 100, color: 'green', speed: Math.random() * 2 + 2, velocityX: Math.random() * 2 + 2 },
-    blue: { x: 50, y: 150, color: 'blue', speed: Math.random() * 2 + 2, velocityX: Math.random() * 2 + 2 },
-    yellow: { x: 50, y: 200, color: 'yellow', speed: Math.random() * 2 + 2, velocityX: Math.random() * 2 + 2 }
-};
-
-// Modify the moveSquares function to apply the bounce effect
-function moveSquares() {
-    Object.values(squares).forEach(square => {
-        if (square.x < canvas.width - 120) {
-            square.x += square.velocityX;
-            
-            // Check for collision with obstacles
-            obstacles.forEach(obs => {
-                if (square.x + 20 > obs.x && square.x < obs.x + obs.width && square.y + 20 > obs.y && square.y < obs.y + obs.height) {
-                    // Bounce effect (reverse the direction)
-                    square.velocityX = -square.velocityX;  // Reverse the direction on X-axis
-                    // Optionally, move the square back to avoid overlapping
-                    square.x -= square.velocityX * 2;  // Push the square away from the obstacle
-                }
-            });
-        }
-    });
-}
-
-        let obstacles = [];
-
-        // Generate random obstacles
-        function generateObstacles() {
-            obstacles = [];
-            for (let i = 0; i < 5; i++) {
-                const x = Math.random() * (canvas.width - 50) + 150;
-                const y = Math.random() * (canvas.height - 50) + 50;
-                obstacles.push({ x, y, width: 30, height: 30 });
-            }
-        }
-
-        // Draw squares and obstacles
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw obstacles
-            obstacles.forEach(obs => {
-                ctx.fillStyle = 'black';
-                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-            });
-
-            // Draw squares
-            Object.values(squares).forEach(square => {
-                ctx.fillStyle = square.color;
-                ctx.fillRect(square.x, square.y, 20, 20);
-            });
-
-            // Draw the finish line
-            ctx.strokeStyle = 'white';
-            ctx.beginPath();
-            ctx.moveTo(canvas.width - 100, 0);
-            ctx.lineTo(canvas.width - 100, canvas.height);
-            ctx.stroke();
-        }
-
-        
-       
-
-        // Start the race
-        function startRace(guess) {
-            if (raceStarted) return;
-            playerGuess = guess;
-            raceStarted = true;
-            winner = null;
-            generateObstacles();
-            resetSquares();
-            gameLoop();
-        }
-
-        // Reset squares' positions
-        function resetSquares() {
-            Object.keys(squares).forEach(key => {
-                squares[key].x = 50;
-            });
-        }
-
-        // Check if any square has reached the finish line
-        function checkWinner() {
-            if (!winner) {
-                Object.keys(squares).forEach(key => {
-                    if (squares[key].x >= canvas.width - 120) {
-                        winner = key;
-                        setTimeout(() => {
-                            alert(winner === playerGuess ? 'You win!' : 'You lose!');
-                        }, 100);
-                    }
-                });
-            }
-        }
-
-        // Game loop
-        function gameLoop() {
-            if (raceStarted && !winner) {
-                moveSquares();
-                checkWinner();
-                draw();
-                requestAnimationFrame(gameLoop);
-            }
-        }
-    </script>
+    <canvas id="gameCanvas"></canvas>
+    <script src="app.js"></script>
 </body>
 </html>
