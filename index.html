@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cube Race Game</title>
+    <title>Square Race Game</title>
     <style>
         body {
             margin: 0;
@@ -32,10 +32,10 @@
 </head>
 <body>
     <div id="guessButtons">
-        <button onclick="startRace('red')">Red Cube</button>
-        <button onclick="startRace('green')">Green Cube</button>
-        <button onclick="startRace('blue')">Blue Cube</button>
-        <button onclick="startRace('yellow')">Yellow Cube</button>
+        <button onclick="startRace('red')">Red Square</button>
+        <button onclick="startRace('green')">Green Square</button>
+        <button onclick="startRace('blue')">Blue Square</button>
+        <button onclick="startRace('yellow')">Yellow Square</button>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script>
@@ -45,12 +45,32 @@
         let winner = null;
         let playerGuess = null;
 
-        const cubes = {
-            red: { x: 50, y: 50, color: 'red', speed: Math.random() * 2 + 2 },
-            green: { x: 50, y: 100, color: 'green', speed: Math.random() * 2 + 2 },
-            blue: { x: 50, y: 150, color: 'blue', speed: Math.random() * 2 + 2 },
-            yellow: { x: 50, y: 200, color: 'yellow', speed: Math.random() * 2 + 2 }
-        };
+// Add velocity to each square
+const squares = {
+    red: { x: 50, y: 50, color: 'red', speed: Math.random() * 2 + 2, velocityX: Math.random() * 2 + 2 },
+    green: { x: 50, y: 100, color: 'green', speed: Math.random() * 2 + 2, velocityX: Math.random() * 2 + 2 },
+    blue: { x: 50, y: 150, color: 'blue', speed: Math.random() * 2 + 2, velocityX: Math.random() * 2 + 2 },
+    yellow: { x: 50, y: 200, color: 'yellow', speed: Math.random() * 2 + 2, velocityX: Math.random() * 2 + 2 }
+};
+
+// Modify the moveSquares function to apply the bounce effect
+function moveSquares() {
+    Object.values(squares).forEach(square => {
+        if (square.x < canvas.width - 120) {
+            square.x += square.velocityX;
+            
+            // Check for collision with obstacles
+            obstacles.forEach(obs => {
+                if (square.x + 20 > obs.x && square.x < obs.x + obs.width && square.y + 20 > obs.y && square.y < obs.y + obs.height) {
+                    // Bounce effect (reverse the direction)
+                    square.velocityX = -square.velocityX;  // Reverse the direction on X-axis
+                    // Optionally, move the square back to avoid overlapping
+                    square.x -= square.velocityX * 2;  // Push the square away from the obstacle
+                }
+            });
+        }
+    });
+}
 
         let obstacles = [];
 
@@ -64,7 +84,7 @@
             }
         }
 
-        // Draw cubes and obstacles
+        // Draw squares and obstacles
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -74,10 +94,10 @@
                 ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
             });
 
-            // Draw cubes
-            Object.values(cubes).forEach(cube => {
-                ctx.fillStyle = cube.color;
-                ctx.fillRect(cube.x, cube.y, 20, 20);
+            // Draw squares
+            Object.values(squares).forEach(square => {
+                ctx.fillStyle = square.color;
+                ctx.fillRect(square.x, square.y, 20, 20);
             });
 
             // Draw the finish line
@@ -88,44 +108,32 @@
             ctx.stroke();
         }
 
-        // Move cubes
-        function moveCubes() {
-            Object.values(cubes).forEach(cube => {
-                if (cube.x < canvas.width - 120) {
-                    cube.x += cube.speed;
-                    // Check for collision with obstacles
-                    obstacles.forEach(obs => {
-                        if (cube.x + 20 > obs.x && cube.x < obs.x + obs.width && cube.y + 20 > obs.y && cube.y < obs.y + obs.height) {
-                            cube.x -= cube.speed; // Reset cube position if it hits an obstacle
-                        }
-                    });
-                }
-            });
-        }
+        
+       
 
         // Start the race
         function startRace(guess) {
             if (raceStarted) return;
             playerGuess = guess;
             raceStarted = true;
-            generateObstacles();
             winner = null;
-            resetCubes();
+            generateObstacles();
+            resetSquares();
             gameLoop();
         }
 
-        // Reset cubes' positions
-        function resetCubes() {
-            Object.keys(cubes).forEach(key => {
-                cubes[key].x = 50;
+        // Reset squares' positions
+        function resetSquares() {
+            Object.keys(squares).forEach(key => {
+                squares[key].x = 50;
             });
         }
 
-        // Check if any cube has reached the finish line
+        // Check if any square has reached the finish line
         function checkWinner() {
             if (!winner) {
-                Object.keys(cubes).forEach(key => {
-                    if (cubes[key].x >= canvas.width - 120) {
+                Object.keys(squares).forEach(key => {
+                    if (squares[key].x >= canvas.width - 120) {
                         winner = key;
                         setTimeout(() => {
                             alert(winner === playerGuess ? 'You win!' : 'You lose!');
@@ -138,7 +146,7 @@
         // Game loop
         function gameLoop() {
             if (raceStarted && !winner) {
-                moveCubes();
+                moveSquares();
                 checkWinner();
                 draw();
                 requestAnimationFrame(gameLoop);
