@@ -9,16 +9,16 @@ let ball = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     radius: 10,
-    speed: 2,
-    dx: 2,
-    dy: 2
+    speed: 1, // Reduced ball speed
+    dx: 1,
+    dy: 1
 };
 
 // Circle properties
 let circles = [
-    { radius: 100, speed: 1, gapAngle: Math.PI / 4, angle: 0, isVisible: true }, // Circle 1
-    { radius: 150, speed: 0.5, gapAngle: Math.PI / 6, angle: 0, isVisible: true }, // Circle 2
-    { radius: 200, speed: 0.3, gapAngle: Math.PI / 8, angle: 0, isVisible: true }  // Circle 3
+    { radius: 100, speed: 0.5, gapAngle: Math.PI / 4, angle: 0, isVisible: true }, // Circle 1
+    { radius: 150, speed: 0.2, gapAngle: Math.PI / 6, angle: 0, isVisible: true }, // Circle 2
+    { radius: 200, speed: 0.1, gapAngle: Math.PI / 8, angle: 0, isVisible: true }  // Circle 3
 ];
 
 // Game loop
@@ -94,7 +94,8 @@ function moveBall() {
 // Check if ball is passing through the gap of a circle
 function isBallInGap(circle) {
     let angle = Math.atan2(ball.y - canvas.height / 2, ball.x - canvas.width / 2);
-    return angle >= 0 && angle <= circle.gapAngle;
+    if (angle < 0) angle += Math.PI * 2; // Ensure angle is positive
+    return angle <= circle.gapAngle;
 }
 
 gameLoop(); // Start the game loop
