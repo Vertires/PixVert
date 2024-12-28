@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Text Animation</title>
+    <title>DVD Screen Saver Text</title>
     <style>
         body {
             display: flex;
@@ -14,11 +14,23 @@
             background-color: #121212;
             font-family: 'Arial', sans-serif;
             color: #fff;
-            flex-direction: column;
+            overflow: hidden;
         }
 
-        .container {
-            text-align: center;
+        #text {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        #message {
+            position: absolute;
+            bottom: 10%;
+            font-size: 2rem;
+            color: white;
+            display: none;
         }
 
         input {
@@ -45,97 +57,83 @@
         button:hover {
             background-color: #0056b3;
         }
-
-        .text {
-            position: absolute;
-            font-size: 3rem;
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5);
-            opacity: 0; /* Make both texts invisible initially */
-        }
-
-        @keyframes moveIn {
-            0% {
-                transform: translateX(-100vw);
-                opacity: 0;
-            }
-            50% {
-                transform: translateX(50vw);
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(100vw);
-                opacity: 0;
-            }
-        }
-
-        #first-text {
-            top: 20%;
-            animation: moveIn 6s forwards;
-        }
-
-        #second-text {
-            bottom: 20%;
-            animation: moveIn 6s 2s forwards;
-        }
-
     </style>
 </head>
 <body>
-    <div class="container" id="ui-container">
-        <h1>Enter Your Text</h1>
-        <input type="text" id="firstInput" placeholder="Enter first text (e.g. Labas Simonai)">
-        <input type="text" id="secondInput" placeholder="Enter second text (e.g. Tu esi gejus)">
-        <button id="playButton" onclick="startAnimation()">Play Animation</button>
+    <div>
+        <input type="text" id="inputText" placeholder="Enter your text">
+        <button onclick="startAnimation()">Start Animation</button>
     </div>
-
-    <div class="text" id="first-text"></div>
-    <div class="text" id="second-text"></div>
+    <div id="text"></div>
+    <div id="message">Wow, you did it!</div>
 
     <script>
+        let textElement = document.getElementById('text');
+        let messageElement = document.getElementById('message');
+        let inputElement = document.getElementById('inputText');
+        let animationInterval;
+        let moveSpeed = 2;
+        let directionX = 1;
+        let directionY = 1;
+        let textWidth, textHeight;
+
         function startAnimation() {
-            // Get the input values
-            const firstText = document.getElementById("firstInput").value;
-            const secondText = document.getElementById("secondInput").value;
+            // Hide the input and button
+            document.querySelector('input').style.display = 'none';
+            document.querySelector('button').style.display = 'none';
 
-            // Hide the UI container (inputs and button)
-            document.getElementById("ui-container").style.display = 'none';
+            // Set initial text content
+            textElement.textContent = inputElement.value || "Default Text";
 
-            // Hide the "Play Animation" button
-            document.getElementById("playButton").style.display = 'none';
+            // Get the size of the text element
+            textWidth = textElement.offsetWidth;
+            textHeight = textElement.offsetHeight;
 
-            // Set the custom text to the elements
-            document.getElementById("first-text").textContent = firstText;
-            document.getElementById("second-text").textContent = secondText;
+            // Reset position
+            textElement.style.left = Math.random() * (window.innerWidth - textWidth) + 'px';
+            textElement.style.top = Math.random() * (window.innerHeight - textHeight) + 'px';
 
-            // Initially, make the second text invisible
-            document.getElementById("second-text").style.opacity = 0;
+            // Start moving the text
+            animationInterval = setInterval(moveText, 10);
+        }
 
-            // Display the second text for 1 second before starting the animation
+        function moveText() {
+            let rect = textElement.getBoundingClientRect();
+            let x = rect.left;
+            let y = rect.top;
+
+            // Move the text
+            textElement.style.left = x + directionX * moveSpeed + 'px';
+            textElement.style.top = y + directionY * moveSpeed + 'px';
+
+            // Check if the text hits the corners
+            if ((x <= 0 && y <= 0) || (x + textWidth >= window.innerWidth && y <= 0) || 
+                (x <= 0 && y + textHeight >= window.innerHeight) || 
+                (x + textWidth >= window.innerWidth && y + textHeight >= window.innerHeight)) {
+                showMessage();
+            }
+
+            // Check if the text hits the edges and reverse direction
+            if (x <= 0 || x + textWidth >= window.innerWidth) {
+                directionX *= -1;
+            }
+
+            if (y <= 0 || y + textHeight >= window.innerHeight) {
+                directionY *= -1;
+            }
+        }
+
+        function showMessage() {
+            // Show the "Wow, you did it!" message
+            messageElement.style.display = 'block';
+            clearInterval(animationInterval); // Stop the animation
+
+            // After 3 seconds, reset the UI and allow new input
             setTimeout(() => {
-                // Make the second text visible after 1 second
-                document.getElementById("second-text").style.opacity = 1;
-
-                // Trigger the animation by making the text visible
-                document.getElementById("first-text").style.opacity = 1;
-
-                // Restart the animation by removing and re-adding the animation class
-                document.getElementById("first-text").style.animation = 'none';
-                document.getElementById("second-text").style.animation = 'none';
-
-                // Trigger the animations again after a short delay
-                setTimeout(() => {
-                    document.getElementById("first-text").style.animation = 'moveIn 6s forwards';
-                    document.getElementById("second-text").style.animation = 'moveIn 6s 2s forwards';
-                }, 50);
-            }, 1000); // 1 second delay before animation starts
-
-            // Show the "Play Animation" button after 7 seconds (end of animation)
-            setTimeout(() => {
-                document.getElementById("playButton").style.display = 'inline-block';
-                document.getElementById("ui-container").style.display = 'block'; // Re-show the UI
-            }, 7000); // Adjust the timing based on the animation duration
+                messageElement.style.display = 'none';
+                document.querySelector('input').style.display = 'inline-block';
+                document.querySelector('button').style.display = 'inline-block';
+            }, 3000);
         }
     </script>
 </body>
