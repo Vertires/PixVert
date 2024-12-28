@@ -3,37 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site Maintenance</title>
+    <title>Maintenance Notice</title>
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
             height: 100vh;
-            background-color: #f4f4f4;
-            color: #333;
+            background-color: #f9fafc;
+            color: #2c3e50;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background: white;
+            border-radius: 8px;
         }
         .big-text {
-            font-size: 2.5rem;
-            font-weight: bold;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #34495e;
             margin-bottom: 1rem;
         }
         .small-text {
-            font-size: 1.25rem;
-            color: #555;
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+        .logo {
+            width: 100px;
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <img src="logo.png" alt="Company Logo" class="logo">
         <div class="big-text">Pixvert is under maintenance</div>
-        <div class="small-text">We’re improving your experience. Please check back soon!</div>
+        <div class="small-text">We are performing essential updates to improve your experience. Thank you for your patience.</div>
     </div>
 </body>
 </html>
