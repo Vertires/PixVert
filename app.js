@@ -16,9 +16,9 @@ let ball = {
 
 // Circle properties
 let circles = [
-    { radius: 100, speed: 1, gapSize: Math.PI / 4 }, // Gap size in radians
-    { radius: 150, speed: 0.5, gapSize: Math.PI / 6 },
-    { radius: 200, speed: 0.3, gapSize: Math.PI / 8 }
+    { radius: 100, speed: 1, gapAngle: Math.PI / 4, angle: 0, isVisible: true }, // Circle 1
+    { radius: 150, speed: 0.5, gapAngle: Math.PI / 6, angle: 0, isVisible: true }, // Circle 2
+    { radius: 200, speed: 0.3, gapAngle: Math.PI / 8, angle: 0, isVisible: true }  // Circle 3
 ];
 
 // Game loop
@@ -32,24 +32,26 @@ function gameLoop() {
 
 // Draw rotating circles
 function drawCircles() {
-    circles.forEach((circle, index) => {
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2); // Center the circles
-        ctx.rotate(circle.speed * index); // Rotate circles differently
-        ctx.beginPath();
-        ctx.arc(0, 0, circle.radius, 0, Math.PI * 2);
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = "white";
-        ctx.stroke();
-        
-        // Draw the gap
-        ctx.beginPath();
-        ctx.arc(0, 0, circle.radius, 0, circle.gapSize);
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = "black";
-        ctx.stroke();
-        
-        ctx.restore();
+    circles.forEach((circle) => {
+        if (circle.isVisible) {
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2); // Center the circles
+            ctx.rotate(circle.angle); // Rotate the circle
+            ctx.beginPath();
+            ctx.arc(0, 0, circle.radius, 0, Math.PI * 2);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "white";
+            ctx.stroke();
+
+            // Draw the gap (empty section)
+            ctx.beginPath();
+            ctx.arc(0, 0, circle.radius, 0, circle.gapAngle);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "#1a1a1a"; // Same color as background to hide part of the circle
+            ctx.stroke();
+
+            ctx.restore();
+        }
     });
 }
 
@@ -69,9 +71,9 @@ function moveBall() {
 
     // Check if ball passes through any gaps
     circles.forEach(circle => {
-        if (isBallInGap(circle)) {
-            // Circle disappears (for simplicity, we just reduce the radius)
-            circle.radius -= 2;
+        if (circle.isVisible && isBallInGap(circle)) {
+            // Circle disappears
+            circle.isVisible = false;
         }
     });
 
@@ -82,12 +84,17 @@ function moveBall() {
     if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
         ball.dy = -ball.dy;
     }
+
+    // Rotate the circles
+    circles.forEach(circle => {
+        circle.angle += circle.speed; // Increase the angle to rotate the circle
+    });
 }
 
 // Check if ball is passing through the gap of a circle
 function isBallInGap(circle) {
     let angle = Math.atan2(ball.y - canvas.height / 2, ball.x - canvas.width / 2);
-    return angle >= 0 && angle <= circle.gapSize;
+    return angle >= 0 && angle <= circle.gapAngle;
 }
 
 gameLoop(); // Start the game loop
