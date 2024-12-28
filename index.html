@@ -3,10 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
-    <meta http-equiv="refresh" content="3;url=https://discord.me/lithuanianfemboys">
+    <title>Cube Race Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            background-color: #333;
+            border: 2px solid black;
+        }
+        #guessButtons {
+            position: absolute;
+            top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <p>Labas prasau palaukit., <a href=""></a>.</p>
+    <div id="guessButtons">
+        <button onclick="startRace('red')">Red Cube</button>
+        <button onclick="startRace('green')">Green Cube</button>
+        <button onclick="startRace('blue')">Blue Cube</button>
+        <button onclick="startRace('yellow')">Yellow Cube</button>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let raceStarted = false;
+        let winner = null;
+        let playerGuess = null;
+
+        const cubes = {
+            red: { x: 50, y: 50, color: 'red', speed: Math.random() * 2 + 2 },
+            green: { x: 50, y: 100, color: 'green', speed: Math.random() * 2 + 2 },
+            blue: { x: 50, y: 150, color: 'blue', speed: Math.random() * 2 + 2 },
+            yellow: { x: 50, y: 200, color: 'yellow', speed: Math.random() * 2 + 2 }
+        };
+
+        let obstacles = [];
+
+        // Generate random obstacles
+        function generateObstacles() {
+            obstacles = [];
+            for (let i = 0; i < 5; i++) {
+                const x = Math.random() * (canvas.width - 50) + 150;
+                const y = Math.random() * (canvas.height - 50) + 50;
+                obstacles.push({ x, y, width: 30, height: 30 });
+            }
+        }
+
+        // Draw cubes and obstacles
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw obstacles
+            obstacles.forEach(obs => {
+                ctx.fillStyle = 'black';
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            });
+
+            // Draw cubes
+            Object.values(cubes).forEach(cube => {
+                ctx.fillStyle = cube.color;
+                ctx.fillRect(cube.x, cube.y, 20, 20);
+            });
+
+            // Draw the finish line
+            ctx.strokeStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 100, 0);
+            ctx.lineTo(canvas.width - 100, canvas.height);
+            ctx.stroke();
+        }
+
+        // Move cubes
+        function moveCubes() {
+            Object.values(cubes).forEach(cube => {
+                if (cube.x < canvas.width - 120) {
+                    cube.x += cube.speed;
+                    // Check for collision with obstacles
+                    obstacles.forEach(obs => {
+                        if (cube.x + 20 > obs.x && cube.x < obs.x + obs.width && cube.y + 20 > obs.y && cube.y < obs.y + obs.height) {
+                            cube.x -= cube.speed; // Reset cube position if it hits an obstacle
+                        }
+                    });
+                }
+            });
+        }
+
+        // Start the race
+        function startRace(guess) {
+            if (raceStarted) return;
+            playerGuess = guess;
+            raceStarted = true;
+            generateObstacles();
+            winner = null;
+            resetCubes();
+            gameLoop();
+        }
+
+        // Reset cubes' positions
+        function resetCubes() {
+            Object.keys(cubes).forEach(key => {
+                cubes[key].x = 50;
+            });
+        }
+
+        // Check if any cube has reached the finish line
+        function checkWinner() {
+            if (!winner) {
+                Object.keys(cubes).forEach(key => {
+                    if (cubes[key].x >= canvas.width - 120) {
+                        winner = key;
+                        setTimeout(() => {
+                            alert(winner === playerGuess ? 'You win!' : 'You lose!');
+                        }, 100);
+                    }
+                });
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (raceStarted && !winner) {
+                moveCubes();
+                checkWinner();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+    </script>
 </body>
 </html>
