@@ -52,7 +52,7 @@
             font-weight: bold;
             color: white;
             text-shadow: 0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5);
-            opacity: 0;
+            opacity: 0; /* Make both texts invisible initially */
         }
 
         @keyframes moveIn {
@@ -85,8 +85,8 @@
 <body>
     <div class="container" id="ui-container">
         <h1>Enter Your Text</h1>
-        <input type="text" id="firstInput" placeholder="Enter first text (e.g. Hello)">
-        <input type="text" id="secondInput" placeholder="Enter second text (e.g. World!)">
+        <input type="text" id="firstInput" placeholder="Enter first text (e.g. Labas Simonai)">
+        <input type="text" id="secondInput" placeholder="Enter second text (e.g. Tu esi gejus)">
         <button id="playButton" onclick="startAnimation()">Play Animation</button>
     </div>
 
@@ -109,14 +109,16 @@
             document.getElementById("first-text").textContent = firstText;
             document.getElementById("second-text").textContent = secondText;
 
-            // Display the second text for 1 second before starting the animation
-            document.getElementById("second-text").style.opacity = 1;
+            // Initially, make the second text invisible
+            document.getElementById("second-text").style.opacity = 0;
 
-            // After 1 second, start the animation for both texts
+            // Display the second text for 1 second before starting the animation
             setTimeout(() => {
+                // Make the second text visible after 1 second
+                document.getElementById("second-text").style.opacity = 1;
+
                 // Trigger the animation by making the text visible
                 document.getElementById("first-text").style.opacity = 1;
-                document.getElementById("second-text").style.opacity = 1;
 
                 // Restart the animation by removing and re-adding the animation class
                 document.getElementById("first-text").style.animation = 'none';
