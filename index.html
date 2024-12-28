@@ -113,13 +113,13 @@
                 showMessage();
             }
 
-            // Check if the text hits the edges and reverse direction
+            // Check if the text hits the edges and reverse direction (bounce effect)
             if (x <= 0 || x + textWidth >= window.innerWidth) {
-                directionX *= -1;
+                directionX *= -1; // Reverse horizontal direction
             }
 
             if (y <= 0 || y + textHeight >= window.innerHeight) {
-                directionY *= -1;
+                directionY *= -1; // Reverse vertical direction
             }
         }
 
