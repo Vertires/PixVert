@@ -72,9 +72,9 @@
         let messageElement = document.getElementById('message');
         let inputElement = document.getElementById('inputText');
         let animationInterval;
-        let moveSpeed = 2;
-        let directionX = 1;
-        let directionY = 1;
+        let moveSpeed = 3; // Speed of the movement
+        let directionX = 1; // Horizontal movement direction
+        let directionY = 1; // Vertical movement direction
         let textWidth, textHeight;
 
         function startAnimation() {
@@ -106,13 +106,6 @@
             textElement.style.left = x + directionX * moveSpeed + 'px';
             textElement.style.top = y + directionY * moveSpeed + 'px';
 
-            // Check if the text hits the corners
-            if ((x <= 0 && y <= 0) || (x + textWidth >= window.innerWidth && y <= 0) || 
-                (x <= 0 && y + textHeight >= window.innerHeight) || 
-                (x + textWidth >= window.innerWidth && y + textHeight >= window.innerHeight)) {
-                showMessage();
-            }
-
             // Check if the text hits the edges and reverse direction (bounce effect)
             if (x <= 0 || x + textWidth >= window.innerWidth) {
                 directionX *= -1; // Reverse horizontal direction
@@ -120,6 +113,13 @@
 
             if (y <= 0 || y + textHeight >= window.innerHeight) {
                 directionY *= -1; // Reverse vertical direction
+            }
+
+            // Check if the text hits the corners
+            if ((x <= 0 && y <= 0) || (x + textWidth >= window.innerWidth && y <= 0) || 
+                (x <= 0 && y + textHeight >= window.innerHeight) || 
+                (x + textWidth >= window.innerWidth && y + textHeight >= window.innerHeight)) {
+                showMessage();
             }
         }
 
