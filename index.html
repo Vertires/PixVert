@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Text</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .text {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            opacity: 0;
+            animation: moveIn 3s forwards;
+        }
+
+        @keyframes moveIn {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            50% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .second-text {
+            animation: moveIn 3s 2s forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="text" id="first-text">Labas Simonai</div>
+    <div class="text second-text" id="second-text">Tu esi gejus</div>
+
+    <script>
+        setTimeout(function() {
+            document.getElementById("second-text").style.opacity = 1;
+        }, 2000); // Wait for 2 seconds before showing the second text
+    </script>
+</body>
+</html>
