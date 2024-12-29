@@ -1,17 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title>My Place</title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but my-place doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <script src="/js/app.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>r/place Clone</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    #canvas { border: 1px solid black; cursor: pointer; }
+    #login { margin: 10px; }
+    #active-users { margin: 10px; }
+  </style>
+</head>
+<body>
+  <div id="login">
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="register()">Register</button>
+  </div>
+
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <div id="active-users">Active Users: 0</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let userToken = '';
+    
+    // Canvas setup
+    const gridSize = 25;
+    const grid = Array.from({ length: 20 }, () => Array(20).fill('white'));
+
+    // Render the grid
+    function renderGrid() {
+      for (let y = 0; y < 20; y++) {
+        for (let x = 0; x < 20; x++) {
+          ctx.fillStyle = grid[y][x];
+          ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+        }
+      }
+    }
+
+    // Handle login
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch('/api/auth.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (data.token) {
+        userToken = data.token;
+        loadPixels();
+      }
+    }
+
+    // Handle register
+    async function register() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch('/api/auth.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      alert(data.message);
+    }
+
+    // Load pixel data
+    async function loadPixels() {
+      const res = await fetch('/api/pixels.js');
+      const pixels = await res.json();
+      pixels.forEach(pixel => {
+        grid[pixel.y][pixel.x] = pixel.color;
+      });
+      renderGrid();
+    }
+
+    // Place a pixel
+    canvas.addEventListener('click', async (event) => {
+      const x = Math.floor(event.offsetX / gridSize);
+      const y = Math.floor(event.offsetY / gridSize);
+      const color = prompt('Enter color:');
+      const res = await fetch('/api/pixels.js', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`
+        },
+        body: JSON.stringify({ x, y, color, token: userToken })
+      });
+      const data = await res.json();
+      if (data.message === 'Pixel Placed') {
+        grid[y][x] = color;
+        renderGrid();
+      }
+    });
+  </script>
+</body>
 </html>
