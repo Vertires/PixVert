@@ -1,49 +1,32 @@
-const mongoose = require('mongoose');
+let pixels = {}; // Store the pixels (keyed by coordinates)
+let cooldowns = {}; // Store cooldowns for users (keyed by user ID or session)
+const COOLDOWN_TIME = 5 * 1000; // Cooldown in milliseconds (5 seconds)
 
-mongoose.connect('mongodb://localhost/rplace', { useNewUrlParser: true, useUnifiedTopology: true });
-
-const Pixel = mongoose.model('Pixel', new mongoose.Schema({
-  x: Number,
-  y: Number,
-  color: String
-}));
-
-const User = mongoose.model('User', new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  cooldown: { type: Number, default: 5 },
-  lastAction: { type: Date, default: Date.now }
-}));
-
-module.exports = async (req, res) => {
-  if (req.method === 'GET') {
-    const pixels = await Pixel.find();
-    return res.status(200).json(pixels);
-  }
-
+export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { x, y, color, token } = req.body;
+    const { x, y, color, userId } = req.body;
 
-    if (!token) return res.status(403).json({ message: 'Token required' });
-
-    const decoded = jwt.verify(token, 'secret_key');
-    const user = await User.findById(decoded._id);
-
-    // Check cooldown
-    const timeElapsed = (Date.now() - user.lastAction) / 1000;
-    if (timeElapsed < user.cooldown) {
-      return res.status(400).json({ message: `You need to wait ${user.cooldown - Math.floor(timeElapsed)} seconds` });
+    if (!x || !y || !color || !userId) {
+      return res.status(400).json({ error: 'Missing parameters' });
     }
 
-    // Update cooldown and last action time
-    user.cooldown += 2; // Stack cooldown
-    user.lastAction = Date.now();
-    await user.save();
+    // Check if the user is on cooldown
+    const lastPlaced = cooldowns[userId];
+    if (lastPlaced && Date.now() - lastPlaced < COOLDOWN_TIME) {
+      return res.status(403).json({ error: 'You must wait before placing another pixel' });
+    }
 
-    // Save pixel
-    const newPixel = new Pixel({ x, y, color });
-    await newPixel.save();
+    // Update the cooldown timestamp
+    cooldowns[userId] = Date.now();
 
-    res.status(200).json({ message: 'Pixel Placed' });
+    // Store the pixel
+    pixels[`${x},${y}`] = color;
+
+    return res.status(200).json({ message: 'Pixel placed' });
+  } else if (req.method === 'GET') {
+    // Return all pixels
+    return res.status(200).json(pixels);
+  } else {
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
-  res.status(405).json({ message: 'Method Not Allowed' });
-};
+}

@@ -24,15 +24,15 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(10, 40px);
-      grid-template-rows: repeat(10, 40px);
+      grid-template-columns: repeat(100, 20px);
+      grid-template-rows: repeat(100, 20px);
       gap: 2px;
       margin-bottom: 20px;
     }
 
     .grid-cell {
-      width: 40px;
-      height: 40px;
+      width: 20px;
+      height: 20px;
       background-color: white;
       border: 1px solid #ddd;
       cursor: pointer;
@@ -54,6 +54,11 @@
     .active {
       border: 2px solid black;
     }
+
+    .cooldown {
+      margin-top: 20px;
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -65,15 +70,17 @@
       <div class="color-button" style="background-color: yellow;" onclick="setColor('yellow')"></div>
     </div>
     <div class="grid" id="grid"></div>
+    <div id="cooldownMessage" class="cooldown" style="display: none;">Please wait before placing another pixel.</div>
   </div>
 
   <script>
     let selectedColor = 'red'; // Default color
-    let grid = document.getElementById('grid');
-    let activeCell = null;
+    let userId = 'user123'; // You can generate a unique user ID here
+    let cooldown = false;
 
     // Create the grid
-    for (let i = 0; i < 100; i++) {
+    const grid = document.getElementById('grid');
+    for (let i = 0; i < 10000; i++) {
       let cell = document.createElement('div');
       cell.classList.add('grid-cell');
       cell.dataset.index = i;
@@ -92,20 +99,34 @@
 
     // Function to place the pixel on the grid
     async function placePixel(cell) {
+      if (cooldown) {
+        document.getElementById('cooldownMessage').style.display = 'block';
+        return;
+      }
+
       const index = cell.dataset.index;
-      const x = index % 10;
-      const y = Math.floor(index / 10);
+      const x = index % 100;
+      const y = Math.floor(index / 100);
 
       // Call the backend to place the pixel
       try {
         const response = await fetch('/api/pixels', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ x, y, color: selectedColor })
+          body: JSON.stringify({ x, y, color: selectedColor, userId })
         });
+
         const data = await response.json();
         if (data.message === 'Pixel placed') {
           cell.style.backgroundColor = selectedColor;
+          cooldown = true;
+          document.getElementById('cooldownMessage').style.display = 'block';
+
+          // Reset cooldown after 5 seconds
+          setTimeout(() => {
+            cooldown = false;
+            document.getElementById('cooldownMessage').style.display = 'none';
+          }, 5000);
         }
       } catch (error) {
         console.error('Error placing pixel:', error);
@@ -119,7 +140,7 @@
       Object.keys(data).forEach(key => {
         const [x, y] = key.split(',');
         const color = data[key];
-        const cell = document.querySelector(`.grid-cell[data-index="${y * 10 + x}"]`);
+        const cell = document.querySelector(`.grid-cell[data-index="${y * 100 + x}"]`);
         if (cell) {
           cell.style.backgroundColor = color;
         }
