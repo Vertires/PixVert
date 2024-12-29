@@ -1,1 +1,0 @@
-export * as sdk from 'https://github.com/Meldiron/sdk-for-deno/raw/fix-6/mod.ts';

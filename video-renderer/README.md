@@ -1,5 +1,0 @@
-- `npm install`
-- `cp .env.example .env`
-- `nano .env` (edit values)
-- `node download.js` (can take a minute or two)
-- Run Processing script (UI/IDE)
