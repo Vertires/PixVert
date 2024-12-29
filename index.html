@@ -1,26 +1,1290 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rotating Circles with Ball</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Almost Reddit Place</title>
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <meta
+      name="description"
+      content="Reddit r/place canvas clone made customizable, open-sourced and self-hosted."
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:domain" content="almost-reddit-place.vercel.app" />
+    <meta
+      property="twitter:url"
+      content="https://almost-reddit-place.vercel.app/"
+    />
+    <meta name="twitter:title" content="Almost Reddit Place" />
+    <meta
+      name="twitter:description"
+      content="Reddit r/place canvas clone made customizable, open-sourced and self-hosted."
+    />
+    <meta
+      name="twitter:image"
+      content="https://almost-reddit-place.vercel.app/cover.png"
+    />
+
+    <meta property="og:title" content="Almost Reddit Place" />
+    <meta property="og:site_name" content="Almost Reddit Place" />
+    <meta property="og:url" content="https://almost-reddit-place.vercel.app/" />
+    <meta
+      property="og:description"
+      content="Reddit r/place canvas clone made customizable, open-sourced and self-hosted."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://almost-reddit-place.vercel.app/cover.png"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #1a1a1a;
-        }
-        canvas {
-            border: 2px solid #fff;
-        }
+      body {
+        font-family: "Quicksand", sans-serif;
+      }
+      .custom-bg {
+        background-color: linear-gradient(180deg, #f02e65 0%, #c81b4c 100%);
+        background-image: url("/assets/bg.png");
+        background-position: center;
+        background-size: cover;
+      }
+      canvas {
+        image-rendering: pixelated;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
+      }
     </style>
-</head>
-<body>
-    <canvas id="gameCanvas"></canvas>
-    <script src="app.js"></script>
-</body>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@7.0.0"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/p5.min.js"
+      integrity="sha512-NxocnqsXP3zm0Xb42zqVMvjQIktKEpTIbCXXyhBPxqGZHqhcOXHs4pXI/GoZ8lE+2NJONRifuBpi9DxC58L0Lw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+
+    <script src="https://cdn.jsdelivr.net/gh/bgrins/TinyColor/dist/tinycolor-min.js"></script>
+
+    <script>
+      window.authModal = {
+        adapter: "appwrite",
+        config: {
+          endpoint: "https://appwrite.matejbaco.eu/v1",
+          projectId: "almostRedditPlaceV2",
+        },
+
+        // If using Uauth
+        oauths: [],
+        oauthSuccessUrl: window.location.origin + "/",
+        oauthErrorUrl: window.location.origin + "/",
+
+        // If using Magic URL
+        magicUrlRedirect: window.location.origin + "/",
+
+        // If supporting password recovery
+        passwordRecoveryRedirect: window.location.origin + "/",
+      };
+    </script>
+    <!-- Auth Modal -->
+    <script src="/auth-modal.js" defer></script>
+
+    <script>
+      // You can define variable here with configurations for the application
+      /*
+      var globalConfig = {
+        pixelsX: 10,
+        pixelsY: 10
+      }
+      */
+    </script>
+
+    <script defer>
+      var globalConfig = globalConfig || {};
+
+      const appwrite = new Appwrite();
+
+      appwrite
+        .setEndpoint("https://appwrite.matejbaco.eu/v1")
+        .setProject("almostRedditPlaceV2");
+
+      function alpineSetup() {
+        return {
+          config: Object.assign(
+            {},
+            {
+              delaySeconds: 10,
+
+              pixelsX: 500,
+              pixelsY: 500,
+
+              colors: [
+                "#ff0000",
+                "#ff8700",
+                "#ffd300",
+                "#ffe5b4",
+                "#ffc0cb",
+                "#deff0a",
+                "#a1ff0a",
+                "#0aff99",
+                "#228B22",
+                "#0aefff",
+                "#147df5",
+                "#580aff",
+                "#be0aff",
+                "#ffffff",
+                "#000000",
+                "#654321",
+                "#808080",
+              ],
+            },
+            globalConfig
+          ),
+
+          state: {
+            showInfoAlert: false,
+
+            cooldown: null,
+            interval: null,
+
+            isColoring: false,
+
+            currentPixelData: null,
+            currentPixelShow: false,
+
+            touch: {
+              clientY: null,
+              clientX: null,
+            },
+
+            isReady: false,
+
+            debounce: null,
+
+            selectedColor: "#ff0000",
+
+            zoom: 1,
+            isDragging: false,
+
+            currentPixelPos: null,
+
+            lastTouch: null,
+
+            posX: 0,
+            posY: 0,
+
+            previousPixelColor: null,
+            previousPixelPosition: null,
+
+            pixels: {},
+          },
+
+          p5: null,
+          canvas: null,
+          sketch: null,
+
+          async onColorPixel() {
+            if (this.state.isColoring || this.state.currentPixelPos === null) {
+              return;
+            }
+
+            try {
+              this.state.isColoring = true;
+
+              const color = this.state.selectedColor;
+              const pixel = {
+                x: this.state.currentPixelPos[0],
+                y: this.state.currentPixelPos[1],
+              };
+
+              try {
+                await appwrite.account.get();
+              } catch (err) {
+                throw new Error("To place pixels, you must sign in.");
+              }
+
+              const res = await appwrite.functions.createExecution(
+                "colorPixel",
+                JSON.stringify({
+                  x: pixel.x,
+                  y: pixel.y,
+                  hex: color,
+                }),
+                false
+              );
+
+              if (res.stderr) {
+                throw new Error(res.stderr);
+              }
+
+              const resJson = JSON.parse(
+                decodeURIComponent(escape(res.stdout))
+              );
+
+              if (!resJson.success && resJson.message) {
+                throw new Error(resJson.message);
+              }
+
+              if (resJson.skipDelay) {
+                this.state.cooldown = 0;
+                if (this.state.interval) {
+                  clearInterval(this.state.interval);
+                }
+              } else {
+                this.state.cooldown = this.config.delaySeconds;
+                if (this.state.interval) {
+                  clearInterval(this.state.interval);
+                }
+                this.state.interval = setInterval(() => {
+                  this.state.cooldown--;
+
+                  if (this.state.cooldown <= 0) {
+                    if (this.state.interval) {
+                      clearInterval(this.state.interval);
+                    }
+                  }
+                }, 1000);
+              }
+            } catch (err) {
+              console.error(err);
+              if (err.message === "Too many requests") {
+                err.message =
+                  "You are too quick! You are not allowed to continue for a minute.";
+              }
+              alert(err.message);
+            } finally {
+              this.state.isColoring = false;
+            }
+          },
+
+          async fetchUsingStorage() {
+            documents = [];
+
+            const fileRes = await appwrite.storage.listFiles(
+              "pixels",
+              undefined,
+              1,
+              undefined,
+              undefined,
+              undefined,
+              "DESC"
+            );
+
+            const fileUrl = appwrite.storage.getFileDownload(
+              "pixels",
+              fileRes.files[0].$id
+            );
+
+            const jsonText = await (await fetch(fileUrl.href)).text();
+
+            const json = JSON.parse(jsonText.split("}]}")[0] + "}]}");
+
+            documents = json.docs;
+
+            let cursor = undefined;
+            hasNext = true;
+            do {
+              const response = await appwrite.database.listDocuments(
+                "pixelsPublic",
+                [
+                  "x.lesserEqual(" + this.config.pixelsX + ")",
+                  "x.greaterEqual(0)",
+                  "y.lesserEqual(" + this.config.pixelsY + ")",
+                  "y.greaterEqual(0)",
+                  "createdAt.greater(" + json.syncAt + ")",
+                ],
+                100,
+                undefined,
+                cursor,
+                "after"
+              );
+
+              documents.push(...response.documents);
+
+              if (response.documents.length > 0) {
+                cursor = response.documents[response.documents.length - 1].$id;
+              } else {
+                hasNext = false;
+              }
+            } while (hasNext);
+
+            return documents;
+          },
+
+          async fetchUsingDatabase() {
+            documents = [];
+
+            let cursor = undefined;
+            hasNext = true;
+            do {
+              const response = await appwrite.database.listDocuments(
+                "pixelsPublic",
+                [
+                  "x.lesserEqual(" + this.config.pixelsX + ")",
+                  "x.greaterEqual(0)",
+                  "y.lesserEqual(" + this.config.pixelsY + ")",
+                  "y.greaterEqual(0)",
+                ],
+                100,
+                undefined,
+                cursor,
+                "after"
+              );
+
+              documents.push(...response.documents);
+
+              if (response.documents.length > 0) {
+                cursor = response.documents[response.documents.length - 1].$id;
+              } else {
+                hasNext = false;
+              }
+            } while (hasNext);
+
+            return documents;
+          },
+
+          async fetchPixels() {
+            documents = [];
+
+            try {
+              documents = await this.fetchUsingStorage();
+            } catch (err) {
+              console.error(err);
+              alert(err.message);
+            }
+
+            for (const document of documents) {
+              if (!this.state.pixels[document.$id]) {
+                if (document.hex === "ffffff") {
+                  if (this.state.pixels[document.$id]) {
+                    delete this.state.pixels[document.$id];
+                  }
+                } else {
+                  this.state.pixels[document.$id] = document;
+                }
+              }
+            }
+
+            this.render(true);
+            this.calculateCenter();
+          },
+
+          calculateCenter() {
+            const pixelSize = 1 * this.state.zoom;
+
+            const k = this.state.zoom * (500 / 2);
+            const left = -(this.state.posX - k);
+            const top = -(this.state.posY - k);
+
+            this.state.currentPixelPos = [
+              Math.floor(left / pixelSize),
+              Math.floor(top / pixelSize),
+            ];
+
+            if (this.state.previousPixelPosition !== null) {
+              this.sketch.set(
+                this.state.previousPixelPosition[0],
+                this.state.previousPixelPosition[1],
+                this.state.previousPixelColor
+              );
+              this.sketch.updatePixels();
+            }
+
+            const currentPixelColor = this.sketch.get(
+              this.state.currentPixelPos[0],
+              this.state.currentPixelPos[1]
+            );
+
+            const tinyColor = tinycolor(
+              `rgb(${currentPixelColor[0]}, ${currentPixelColor[1]}, ${currentPixelColor[2]})`
+            );
+
+            let darkerPixelColorHex;
+            if (tinyColor.isLight()) {
+              darkerPixelColorHex = tinyColor.darken(35).toString();
+            } else {
+              darkerPixelColorHex = tinyColor.brighten(35).toString();
+            }
+
+            const clr = this.sketch.color(darkerPixelColorHex);
+            this.sketch.set(
+              this.state.currentPixelPos[0],
+              this.state.currentPixelPos[1],
+              clr
+            );
+            this.sketch.updatePixels();
+
+            this.state.previousPixelColor = currentPixelColor;
+            this.state.previousPixelPosition = this.state.currentPixelPos;
+
+            const currentCursorPixel =
+              this.state.pixels[
+                `${this.state.currentPixelPos[0]}_${this.state.currentPixelPos[1]}`
+              ];
+
+            this.state.currentPixelShow = currentCursorPixel !== undefined;
+            this.state.currentPixelData =
+              currentCursorPixel === undefined
+                ? this.state.currentPixelData
+                : currentCursorPixel;
+          },
+
+          onMouseDown(event) {
+            this.state.isDragging = true;
+          },
+
+          onMouseUp(event) {
+            this.state.isDragging = false;
+          },
+
+          onTouchStart(event) {
+            this.state.lastTouch = {
+              x: event.touches[0].screenX,
+              y: event.touches[0].screenY,
+            };
+          },
+
+          onTouchEnd(event) {
+            this.state.lastTouch = null;
+          },
+
+          onTouchMove(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!this.state.lastTouch) {
+              return;
+            }
+
+            const moveX = event.touches[0].screenX - this.state.lastTouch.x;
+            const moveY = event.touches[0].screenY - this.state.lastTouch.y;
+
+            this.state.posX += moveX;
+            this.state.posY += moveY;
+
+            this.calculateCenter();
+
+            this.state.lastTouch = {
+              x: event.touches[0].screenX,
+              y: event.touches[0].screenY,
+            };
+          },
+
+          onMouseMove(event) {
+            if (!this.state.isDragging) {
+              return;
+            }
+
+            const { movementY, movementX } = event;
+
+            this.state.posX += event.movementX;
+            this.state.posY += event.movementY;
+
+            this.calculateCenter();
+          },
+
+          onScroll(event) {
+            const originalDistance = this.state.zoom;
+
+            let scroll = -event.deltaY;
+            this.state.zoom += scroll / 200;
+
+            this.checkZoom(originalDistance);
+
+            event.preventDefault();
+            event.stopPropagation();
+          },
+
+          init() {
+            appwrite.subscribe(
+              ["collections.pixelsPublic.documents"],
+              (event) => {
+                let d = Date.now();
+                let isAction = false;
+                let actionColor = null;
+                let actionPos = null;
+
+                if (
+                  event.event === "database.documents.update" ||
+                  event.event === "database.documents.create"
+                ) {
+                  if (event.payload.hex === "ffffff") {
+                    if (this.state.pixels[event.payload.$id]) {
+                      delete this.state.pixels[event.payload.$id];
+
+                      isAction = true;
+                      actionColor = "ffffff";
+                      actionPos = event.payload.$id.split("_");
+                    }
+                  } else {
+                    this.state.pixels[event.payload.$id] = event.payload;
+
+                    isAction = true;
+                    actionColor = event.payload.hex;
+                    actionPos = event.payload.$id.split("_");
+                  }
+                }
+
+                if (isAction) {
+                  const pixelSize = 1 * this.state.zoom;
+
+                  const k = this.state.zoom * (500 / 2);
+                  const left = -(this.state.posX - k);
+                  const top = -(this.state.posY - k);
+
+                  const currentPos = [
+                    Math.floor(left / pixelSize),
+                    Math.floor(top / pixelSize),
+                  ];
+
+                  if (
+                    +actionPos[0] == currentPos[0] &&
+                    +actionPos[1] === currentPos[1]
+                  ) {
+                    this.state.previousPixelColor = this.sketch.color(
+                      "#" + actionColor
+                    );
+                    this.calculateCenter();
+                  }
+
+                  const clr = this.sketch.color("#" + actionColor);
+                  this.sketch.set(actionPos[0], actionPos[1], clr);
+                  this.sketch.updatePixels();
+                }
+              }
+            );
+
+            setTimeout(() => {
+              const s = (sketch) => {
+                sketch.setup = () => {
+                  var canvas = sketch.createCanvas(500, 500);
+
+                  canvas.parent("appboard");
+
+                  this.canvas = canvas;
+                  this.sketch = sketch;
+
+                  this.sketch.noStroke();
+
+                  this.fetchPixels();
+                };
+
+                // DO NOT USE
+                sketch.draw = () => {};
+
+                sketch.keyPressed = (event) => {
+                  if (
+                    event.target.nodeName.toLowerCase() !== "canvas" &&
+                    event.target.nodeName.toLowerCase() !== "body"
+                  ) {
+                    return;
+                  }
+
+                  if (event.key === " ") {
+                    this.onColorPixel();
+                    return;
+                  }
+
+                  if (!isNaN(event.key)) {
+                    const colorIndex = +event.key - 1;
+                    this.state.selectedColor = this.config.colors[colorIndex];
+                    return;
+                  }
+
+                  let moveX = 0;
+                  let moveY = 0;
+
+                  if (
+                    event.key === "A" ||
+                    event.key === "a" ||
+                    event.key === "ArrowLeft"
+                  ) {
+                    moveX = 1;
+                  }
+
+                  if (
+                    event.key === "D" ||
+                    event.key === "d" ||
+                    event.key === "ArrowRight"
+                  ) {
+                    moveX = -1;
+                  }
+
+                  if (
+                    event.key === "W" ||
+                    (event.key === "w") | (event.key === "ArrowUp")
+                  ) {
+                    moveY = 1;
+                  }
+
+                  if (
+                    event.key === "S" ||
+                    event.key === "s" ||
+                    event.key === "ArrowDown"
+                  ) {
+                    moveY = -1;
+                  }
+
+                  if (event.shiftKey) {
+                    moveX *= 3;
+                    moveY *= 3;
+                  }
+
+                  this.state.posX += moveX * this.state.zoom;
+                  this.state.posY += moveY * this.state.zoom;
+                  this.calculateCenter();
+                };
+              };
+
+              this.p5 = new p5(s);
+            }, 1);
+          },
+
+          toggleInfo() {
+            this.state.showInfoAlert = !this.state.showInfoAlert;
+          },
+
+          goToCenter() {
+            this.state.posX = 0;
+            this.state.posY = 0;
+            this.calculateCenter();
+          },
+
+          exportScreenshot() {
+            const s = (sketch) => {
+              sketch.setup = () => {
+                const { pixels } = this.state;
+                const { pixelsX, pixelsY } = this.config;
+
+                const canvas = sketch.createCanvas(pixelsX, pixelsY);
+                sketch.pixelDensity(1);
+
+                const clrBackground = sketch.color("#ffffff");
+                for (let x = 0; x < pixelsX; x++) {
+                  for (let y = 0; y < pixelsY; y++) {
+                    sketch.set(x, y, clrBackground);
+                  }
+                }
+
+                for (const pixel in pixels) {
+                  const pixelData = pixels[pixel];
+                  const clr = sketch.color("#" + pixelData.hex);
+                  sketch.set(pixelData.x, pixelData.y, clr);
+                }
+
+                sketch.updatePixels();
+
+                sketch.saveCanvas(canvas, "myCanvas", "png");
+              };
+            };
+
+            const p5Screenshot = new p5(s);
+          },
+
+          zoomOut() {
+            const originalDistance = this.state.zoom;
+            this.state.zoom /= 1.5;
+
+            this.checkZoom(originalDistance);
+          },
+
+          zoomIn() {
+            const originalDistance = this.state.zoom;
+            this.state.zoom *= 1.5;
+
+            this.checkZoom(originalDistance);
+          },
+
+          checkZoom(originalZoom) {
+            if (this.state.zoom < 1) {
+              this.state.zoom = 1;
+            }
+            if (this.state.zoom > 100) {
+              this.state.zoom = 100;
+            }
+
+            const originalWidth = +document
+              .querySelector("#defaultCanvas0")
+              .style.width.split("px")[0];
+            const originalHeight = +document
+              .querySelector("#defaultCanvas0")
+              .style.height.split("px")[0];
+
+            const newWidth = 500 * this.state.zoom;
+            const newHeight = 500 * this.state.zoom;
+
+            document.querySelector("#defaultCanvas0").style.width =
+              newWidth + "px";
+            document.querySelector("#defaultCanvas0").style.height =
+              newHeight + "px";
+
+            const originalDistance = this.distanceFromCenter(
+              this.state.posX,
+              this.state.posY,
+              originalZoom
+            );
+            const newDistance = this.distanceFromCenter(
+              this.state.posX,
+              this.state.posY,
+              this.state.zoom
+            );
+
+            const diffX = originalDistance[0] - newDistance[0];
+            const diffY = originalDistance[1] - newDistance[1];
+
+            this.state.posX += diffX;
+            this.state.posY += diffY;
+
+            this.calculateCenter();
+          },
+
+          distanceFromCenter(x, y, zoom) {
+            const middleX = zoom * (500 / 2);
+            const middleY = zoom * (500 / 2);
+
+            const diffX = middleX - (x + 500 / 2) * zoom;
+            const diffY = middleY - (y + 500 / 2) * zoom;
+
+            return [diffX / this.state.zoom, diffY / this.state.zoom];
+          },
+
+          render(forced = false) {
+            const { pixelsX, pixelsY } = this.config;
+
+            if (!forced && !this.state.isReady) {
+              return;
+            }
+
+            this.state.isReady = true;
+
+            //          this.sketch.pixelDensity(1);
+            const clrBackground = this.sketch.color("#ffffff");
+            for (let x = 0; x < pixelsX; x++) {
+              for (let y = 0; y < pixelsY; y++) {
+                this.sketch.set(x, y, clrBackground);
+              }
+            }
+
+            this.renderPixels();
+
+            this.sketch.updatePixels();
+          },
+
+          printDate(date) {
+            if (!date) {
+              return "No date";
+            }
+
+            const d = new Date(date);
+
+            const min =
+              d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes();
+            const hour = d.getHours() < 10 ? "0" + d.getHours() : d.getHours();
+            const day = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
+            let m = d.getMonth() + 1;
+            const month = m < 10 ? "0" + m : m;
+
+            return `${day}.${month} at ${hour}:${min}`;
+          },
+
+          renderPixels() {
+            const { pixels } = this.state;
+
+            for (const pixel in pixels) {
+              const pixelData = pixels[pixel];
+              const clr = this.sketch.color("#" + pixelData.hex);
+              this.sketch.set(pixelData.x, pixelData.y, clr);
+            }
+          },
+        };
+      }
+
+      const app = alpineSetup();
+    </script>
+  </head>
+  <body>
+    <div x-data="app">
+      <div class="fixed inset-0 bg-primary custom-bg z-[5]"></div>
+
+      <div class="relative z-10 flex flex-col min-h-screen px-3 min-w-screen">
+        <div
+          class="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black to-primary opacity-10"
+        ></div>
+
+        <img
+          class="absolute z-10 hidden left-10 bottom-10 sm:block"
+          src="/assets/dots-bl.svg"
+          alt=""
+        />
+        <img
+          class="absolute z-10 hidden right-10 top-10 sm:block"
+          src="/assets/dots-tr.svg"
+          alt=""
+        />
+
+        <div
+          class="relative z-20 flex flex-col items-center justify-center h-[100vh] py-10"
+        >
+          <div
+            class="flex-shrink-0 flex items-center mb-2 justify-center space-x-3"
+          >
+            <h1 class="text-white font-bold text-3xl text-center">
+              Almost Reddit Place
+            </h1>
+
+            <template hidden x-if="!state.isReady">
+              <svg
+                class="w-6 h-6 animate-spin text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            </template>
+          </div>
+
+          <template hidden x-if="!state.isReady">
+            <p
+              class="flex-shrink-0 mt-2 text-white font-bold text-lg text-center"
+            >
+              From time to time, we need to load a big file. Please be patient
+              if load takes up to a minute.
+            </p>
+          </template>
+
+          <div
+            class="h-full mt-4 touch-manipulation container bg-white rounded-xl overflow-hidden relative"
+          >
+            <div
+              x-show="state.currentPixelShow"
+              x-transition:enter="transition ease-out duration-300"
+              x-transition:enter-start="opacity-0 scale-90"
+              x-transition:enter-end="opacity-100 scale-100"
+              x-transition:leave="transition ease-in duration-300"
+              x-transition:leave-start="opacity-100 scale-100"
+              x-transition:leave-end="opacity-0 scale-90"
+              class="pointer-events-none absolute -space-y-1 flex-col z-10 bottom-4 left-0 w-full flex items-center justify-center"
+            >
+              <div
+                x-text="state.currentPixelData ? printDate(state.currentPixelData.createdAt) : ''"
+                class="p-1 px-2 text-xs text-slate-200 bg-slate-500 rounded-lg"
+              ></div>
+              <div
+                x-text="state.currentPixelData ? state.currentPixelData.userId : ''"
+                class="p-2 text-sm text-slate-500 bg-slate-900 rounded-lg"
+              ></div>
+            </div>
+
+            <div class="relative h-full overflow-hidden bg-[#e2e8f0]">
+              <div class="z-10 absolute top-4 left-4 flex flex-col space-y-4">
+                <button
+                  x-on:click="toggleInfo()"
+                  class="p-3 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <button
+                  x-on:click="goToCenter()"
+                  class="p-3 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="z-10 absolute top-4 right-4 flex flex-col space-y-4">
+                <button
+                  x-on:click="zoomIn()"
+                  class="p-3 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                    />
+                  </svg>
+                </button>
+                <button
+                  x-on:click="zoomOut()"
+                  class="p-3 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div
+                x-on:wheel="onScroll($event)"
+                x-on:mousedown="onMouseDown($event)"
+                x-on:mouseup="onMouseUp($event)"
+                x-on:mousemove="onMouseMove($event)"
+                x-on:touchmove="onTouchMove($event)"
+                x-on:touchend="onTouchEnd($event)"
+                x-on:touchcancel="onTouchEnd($event)"
+                x-on:touchstart="onTouchStart($event)"
+                class="w-full h-full flex items-center justify-center"
+              >
+                <div
+                  class="w-full h-full flex items-center justify-center"
+                  id="appboard"
+                  x-bind:style="'transform: translate(' + state.posX + 'px, ' + state.posY + 'px)'"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="flex-shrink-0 mt-3 container bg-white rounded-xl p-4 grid grid-cols-12 gap-4"
+          >
+            <div
+              class="overflow-x-auto col-span-12 md:col-span-8 flex flex-row space-x-3 items-center h-full"
+            >
+              <template x-for="(color, i) in config.colors" :key="i">
+                <div class="relative flex items-center justify-center h-full">
+                  <template x-if="state.selectedColor === color">
+                    <div
+                      class="pointer-events-none absolute left-0 top-0 h-full items-center w-full flex justify-center"
+                    >
+                      <div
+                        class="p-[3px] rounded-full bg-slate-900 border-white flex items-center justify-center text-white"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-3 w-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </template>
+
+                  <button
+                    x-on:click="state.selectedColor = color"
+                    x-bind:class="state.selectedColor === color ? 'border-2 border-slate-900' : 'border border-slate-200'"
+                    class="rounded-full w-10 h-10"
+                    x-bind:style="'background-color:' + color"
+                  ></button>
+                </div>
+              </template>
+            </div>
+
+            <template
+              hidden
+              x-data="{loaded: false}"
+              x-init="setTimeout(() => { loaded = true }, 1)"
+              x-if="loaded"
+            >
+              <div class="col-span-12 md:col-span-4">
+                <template hidden x-if="$store.authModal.accountProfile">
+                  <button
+                    x-on:click="onColorPixel()"
+                    x-bind:class="state.cooldown <= 0 ? 'bg-[#f02e65]' : 'bg-orange-400 opacity-50'"
+                    class="flex items-center justify-center space-x-3 text-white bg-[#f02e65] w-full rounded-xl py-3 px-9"
+                  >
+                    <template hidden x-if="state.cooldown <= 0"
+                      ><p>Color Pixel</p></template
+                    >
+
+                    <template hidden x-if="state.cooldown > 0"
+                      ><p
+                        x-text="'Color in ' + state.cooldown + (state.cooldown <= 1 ? ' second' : ' seconds')"
+                      ></p
+                    ></template>
+
+                    <template hidden x-if="state.isColoring">
+                      <svg
+                        class="w-4 h-4 animate-spin text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          class="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          stroke-width="4"
+                        ></circle>
+                        <path
+                          class="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    </template>
+                  </button>
+                </template>
+
+                <template hidden x-if="!$store.authModal.accountProfile">
+                  <button
+                    x-on:click="$store.authModal.open()"
+                    class="flex items-center justify-center space-x-3 text-white bg-[#f02e65] w-full rounded-xl py-3 px-9"
+                  >
+                    <p>Sign in to Color</p>
+
+                    <template hidden x-if="state.isColoring">
+                      <svg
+                        class="w-4 h-4 animate-spin text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          class="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          stroke-width="4"
+                        ></circle>
+                        <path
+                          class="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    </template>
+                  </button>
+                </template>
+              </div>
+            </template>
+          </div>
+
+          <div class="container mx-auto hidden sm:block">
+            <div class="flex w-full justify-end items-end space-x-3 mt-4">
+              <a href="https://appwrite.io/" target="_blank">
+                <img
+                  style="width: 130px"
+                  src="https://appwrite.io/images-ee/press/badge-white-box.svg"
+                  alt="Built with Appwrite"
+                />
+              </a>
+
+              <a
+                href="https://github.com/Meldiron/almost-reddit-place/"
+                target="_blank"
+              >
+                <svg
+                  style="width: 130px; height: auto"
+                  width="1120"
+                  height="600"
+                  viewBox="0 0 1120 600"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M1070 0H50C22.3858 0 0 22.3858 0 50V550C0 577.614 22.3858 600 50 600H1070C1097.61 600 1120 577.614 1120 550V50C1120 22.3858 1097.61 0 1070 0Z"
+                    fill="#181717"
+                  />
+                  <path
+                    d="M176.4 163.5V172.8H146.9V193.3H169.9V202.6H146.9V233H135.5V163.5H176.4ZM210.865 233.9C205.665 233.9 200.965 232.733 196.765 230.4C192.565 228 189.265 224.667 186.865 220.4C184.465 216.067 183.265 211.067 183.265 205.4C183.265 199.8 184.498 194.833 186.965 190.5C189.432 186.167 192.798 182.833 197.065 180.5C201.332 178.167 206.098 177 211.365 177C216.632 177 221.398 178.167 225.665 180.5C229.932 182.833 233.298 186.167 235.765 190.5C238.232 194.833 239.465 199.8 239.465 205.4C239.465 211 238.198 215.967 235.665 220.3C233.132 224.633 229.665 228 225.265 230.4C220.932 232.733 216.132 233.9 210.865 233.9ZM210.865 224C213.798 224 216.532 223.3 219.065 221.9C221.665 220.5 223.765 218.4 225.365 215.6C226.965 212.8 227.765 209.4 227.765 205.4C227.765 201.4 226.998 198.033 225.465 195.3C223.932 192.5 221.898 190.4 219.365 189C216.832 187.6 214.098 186.9 211.165 186.9C208.232 186.9 205.498 187.6 202.965 189C200.498 190.4 198.532 192.5 197.065 195.3C195.598 198.033 194.865 201.4 194.865 205.4C194.865 211.333 196.365 215.933 199.365 219.2C202.432 222.4 206.265 224 210.865 224ZM262.134 185.9C263.801 183.1 266.001 180.933 268.734 179.4C271.534 177.8 274.834 177 278.634 177V188.8H275.734C271.268 188.8 267.868 189.933 265.534 192.2C263.268 194.467 262.134 198.4 262.134 204V233H250.734V177.9H262.134V185.9ZM310.913 205.5L336.313 233H320.913L300.513 209.3V233H289.113V159H300.513V202L320.513 177.9H336.313L310.913 205.5ZM437.161 177C441.494 177 445.361 177.9 448.761 179.7C452.228 181.5 454.928 184.167 456.861 187.7C458.861 191.233 459.861 195.5 459.861 200.5V233H448.561V202.2C448.561 197.267 447.328 193.5 444.861 190.9C442.394 188.233 439.028 186.9 434.761 186.9C430.494 186.9 427.094 188.233 424.561 190.9C422.094 193.5 420.861 197.267 420.861 202.2V233H409.561V202.2C409.561 197.267 408.328 193.5 405.861 190.9C403.394 188.233 400.028 186.9 395.761 186.9C391.494 186.9 388.094 188.233 385.561 190.9C383.094 193.5 381.861 197.267 381.861 202.2V233H370.461V177.9H381.861V184.2C383.728 181.933 386.094 180.167 388.961 178.9C391.828 177.633 394.894 177 398.161 177C402.561 177 406.494 177.933 409.961 179.8C413.428 181.667 416.094 184.367 417.961 187.9C419.628 184.567 422.228 181.933 425.761 180C429.294 178 433.094 177 437.161 177ZM524.867 204.1C524.867 206.167 524.734 208.033 524.467 209.7H482.367C482.701 214.1 484.334 217.633 487.267 220.3C490.201 222.967 493.801 224.3 498.067 224.3C504.201 224.3 508.534 221.733 511.067 216.6H523.367C521.701 221.667 518.667 225.833 514.267 229.1C509.934 232.3 504.534 233.9 498.067 233.9C492.801 233.9 488.067 232.733 483.867 230.4C479.734 228 476.467 224.667 474.067 220.4C471.734 216.067 470.567 211.067 470.567 205.4C470.567 199.733 471.701 194.767 473.967 190.5C476.301 186.167 479.534 182.833 483.667 180.5C487.867 178.167 492.667 177 498.067 177C503.267 177 507.901 178.133 511.967 180.4C516.034 182.667 519.201 185.867 521.467 190C523.734 194.067 524.867 198.767 524.867 204.1ZM512.967 200.5C512.901 196.3 511.401 192.933 508.467 190.4C505.534 187.867 501.901 186.6 497.567 186.6C493.634 186.6 490.267 187.867 487.467 190.4C484.667 192.867 483.001 196.233 482.467 200.5H512.967ZM585.963 233.9C580.763 233.9 576.063 232.733 571.863 230.4C567.663 228 564.363 224.667 561.963 220.4C559.563 216.067 558.363 211.067 558.363 205.4C558.363 199.8 559.596 194.833 562.063 190.5C564.529 186.167 567.896 182.833 572.163 180.5C576.429 178.167 581.196 177 586.463 177C591.729 177 596.496 178.167 600.763 180.5C605.029 182.833 608.396 186.167 610.863 190.5C613.329 194.833 614.563 199.8 614.563 205.4C614.563 211 613.296 215.967 610.763 220.3C608.229 224.633 604.763 228 600.363 230.4C596.029 232.733 591.229 233.9 585.963 233.9ZM585.963 224C588.896 224 591.629 223.3 594.163 221.9C596.763 220.5 598.863 218.4 600.463 215.6C602.063 212.8 602.863 209.4 602.863 205.4C602.863 201.4 602.096 198.033 600.563 195.3C599.029 192.5 596.996 190.4 594.463 189C591.929 187.6 589.196 186.9 586.263 186.9C583.329 186.9 580.596 187.6 578.063 189C575.596 190.4 573.629 192.5 572.163 195.3C570.696 198.033 569.963 201.4 569.963 205.4C569.963 211.333 571.463 215.933 574.463 219.2C577.529 222.4 581.363 224 585.963 224ZM653.632 177C657.965 177 661.832 177.9 665.232 179.7C668.699 181.5 671.399 184.167 673.332 187.7C675.265 191.233 676.232 195.5 676.232 200.5V233H664.932V202.2C664.932 197.267 663.699 193.5 661.232 190.9C658.765 188.233 655.399 186.9 651.132 186.9C646.865 186.9 643.465 188.233 640.932 190.9C638.465 193.5 637.232 197.267 637.232 202.2V233H625.832V177.9H637.232V184.2C639.099 181.933 641.465 180.167 644.332 178.9C647.265 177.633 650.365 177 653.632 177Z"
+                    fill="white"
+                  />
+                  <path
+                    d="M406.2 386C404.3 382.5 401.55 379.85 397.95 378.05C394.45 376.15 390.3 375.2 385.5 375.2C377.2 375.2 370.55 377.95 365.55 383.45C360.55 388.85 358.05 396.1 358.05 405.2C358.05 414.9 360.65 422.5 365.85 428C371.15 433.4 378.4 436.1 387.6 436.1C393.9 436.1 399.2 434.5 403.5 431.3C407.9 428.1 411.1 423.5 413.1 417.5H380.55V398.6H436.35V422.45C434.45 428.85 431.2 434.8 426.6 440.3C422.1 445.8 416.35 450.25 409.35 453.65C402.35 457.05 394.45 458.75 385.65 458.75C375.25 458.75 365.95 456.5 357.75 452C349.65 447.4 343.3 441.05 338.7 432.95C334.2 424.85 331.95 415.6 331.95 405.2C331.95 394.8 334.2 385.55 338.7 377.45C343.3 369.25 349.65 362.9 357.75 358.4C365.85 353.8 375.1 351.5 385.5 351.5C398.1 351.5 408.7 354.55 417.3 360.65C426 366.75 431.75 375.2 434.55 386H406.2ZM463.458 365.6C458.958 365.6 455.258 364.3 452.358 361.7C449.558 359 448.158 355.7 448.158 351.8C448.158 347.8 449.558 344.5 452.358 341.9C455.258 339.2 458.958 337.85 463.458 337.85C467.858 337.85 471.458 339.2 474.258 341.9C477.158 344.5 478.608 347.8 478.608 351.8C478.608 355.7 477.158 359 474.258 361.7C471.458 364.3 467.858 365.6 463.458 365.6ZM476.208 374.3V458H450.558V374.3H476.208ZM541.446 436.25V458H528.396C519.096 458 511.846 455.75 506.646 451.25C501.446 446.65 498.846 439.2 498.846 428.9V395.6H488.646V374.3H498.846V353.9H524.496V374.3H541.296V395.6H524.496V429.2C524.496 431.7 525.096 433.5 526.296 434.6C527.496 435.7 529.496 436.25 532.296 436.25H541.446ZM646.934 352.7V458H621.284V414.65H581.384V458H555.734V352.7H581.384V393.95H621.284V352.7H646.934ZM748.1 374.3V458H722.45V446.6C719.85 450.3 716.3 453.3 711.8 455.6C707.4 457.8 702.5 458.9 697.1 458.9C690.7 458.9 685.05 457.5 680.15 454.7C675.25 451.8 671.45 447.65 668.75 442.25C666.05 436.85 664.7 430.5 664.7 423.2V374.3H690.2V419.75C690.2 425.35 691.65 429.7 694.55 432.8C697.45 435.9 701.35 437.45 706.25 437.45C711.25 437.45 715.2 435.9 718.1 432.8C721 429.7 722.45 425.35 722.45 419.75V374.3H748.1ZM792.175 386.15C794.575 382.25 798.025 379.1 802.525 376.7C807.025 374.3 812.175 373.1 817.975 373.1C824.875 373.1 831.125 374.85 836.725 378.35C842.325 381.85 846.725 386.85 849.925 393.35C853.225 399.85 854.875 407.4 854.875 416C854.875 424.6 853.225 432.2 849.925 438.8C846.725 445.3 842.325 450.35 836.725 453.95C831.125 457.45 824.875 459.2 817.975 459.2C812.075 459.2 806.925 458.05 802.525 455.75C798.125 453.35 794.675 450.2 792.175 446.3V458H766.525V347H792.175V386.15ZM828.775 416C828.775 409.6 826.975 404.6 823.375 401C819.875 397.3 815.525 395.45 810.325 395.45C805.225 395.45 800.875 397.3 797.275 401C793.775 404.7 792.025 409.75 792.025 416.15C792.025 422.55 793.775 427.6 797.275 431.3C800.875 435 805.225 436.85 810.325 436.85C815.425 436.85 819.775 435 823.375 431.3C826.975 427.5 828.775 422.4 828.775 416Z"
+                    fill="white"
+                  />
+                  <path
+                    d="M201 334.807C160.668 334.807 128 367.493 128 407.807C128 440.067 148.914 467.423 177.914 477.065C181.564 477.753 182.902 475.496 182.902 473.555C182.902 471.822 182.841 467.229 182.811 461.145C162.505 465.55 158.222 451.351 158.222 451.351C154.901 442.926 150.101 440.675 150.101 440.675C143.488 436.149 150.612 436.24 150.612 436.24C157.942 436.751 161.793 443.759 161.793 443.759C168.302 454.922 178.881 451.698 183.054 449.83C183.711 445.11 185.591 441.892 187.678 440.067C171.465 438.242 154.426 431.964 154.426 403.992C154.426 396.023 157.255 389.514 161.939 384.404C161.118 382.561 158.654 375.139 162.578 365.084C162.578 365.084 168.691 363.125 182.653 372.566C188.493 370.942 194.698 370.139 200.903 370.102C207.108 370.139 213.313 370.942 219.153 372.566C233.023 363.125 239.136 365.084 239.136 365.084C243.06 375.139 240.596 382.561 239.866 384.404C244.52 389.514 247.349 396.023 247.349 403.992C247.349 432.037 230.285 438.211 214.043 440.006C216.598 442.196 218.97 446.673 218.97 453.511C218.97 463.281 218.879 471.128 218.879 473.501C218.879 475.417 220.156 477.698 223.898 476.968C253.104 467.393 274 440.018 274 407.807C274 367.493 241.314 334.807 201 334.807"
+                    fill="white"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        x-show="state.showInfoAlert"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed z-[9999] inset-0"
+        style="display: none; font-family: 'Montserrat', sans-serif"
+      >
+        <div class="w-full h-full relative">
+          <div
+            class="absolute inset-0 bg-black opacity-50"
+            x-on:click="toggleInfo()"
+          ></div>
+          <div
+            class="relative w-full h-full pt-10 overflow-y-auto pb-10"
+            x-on:click="toggleInfo()"
+          >
+            <div
+              class="mx-auto w-full max-w-2xl rounded-xl bg-white p-6"
+              x-on:click="$event.stopPropagation()"
+            >
+              <div class="flex justify-between items-center">
+                <h1 class="text-auth-gray-900 mb-4 text-2xl font-bold">
+                  Getting Started
+                </h1>
+                <button
+                  type="button"
+                  x-on:click="toggleInfo()"
+                  class="p-3 transition-colors duration-200 transform rounded-md hover:bg-opacity-25 hover:bg-gray-600 focus:outline-none"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6 18L18 6M6 6L18 18"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="mt-6 prose">
+                <p>Welcome to Almost Reddit Place 👋</p>
+
+                <p>
+                  I decided to create this project to showcase what
+                  <a
+                    href="https://appwrite.io/docs/installation"
+                    class="text-[#f02e65]"
+                    >Appwrite</a
+                  >
+                  is capable of and learn how to work with canvas on a website.
+                  I took the idea from Reddit Place, where the Reddit team added
+                  a minigame similar to this one for a few weeks after April
+                  Fools' Day 🤪
+                </p>
+
+                <p>
+                  In this game, anyone can color 1 pixel of 500x500 canvas every
+                  10 seconds. There is a palette of colors you can pick from to
+                  create your masterpiece. If you want to work on a big
+                  painting, feel free to invite your friends to help you 🖼️
+                </p>
+
+                <i class="italic"
+                  >Fun fact: Appwrite implementation took less than 2 hours!</i
+                >
+
+                <h3>✨ Tips and Tricks</h3>
+
+                <ul>
+                  <li>
+                    Center of the canvas is your cursor. This means that if you
+                    paint a pixel, it will paint the one in the middle of the
+                    canvas. You can drag&drop with your mouse to move around the
+                    canvas to move this cursor. The cursor is visible, so there
+                    shouldn't be any problem painting any pixel you want. If it
+                    feels tricky selecting a specific pixel, you can zoom in to
+                    make it easier.
+                  </li>
+                  <li>
+                    If you focus inside canvas (click it), you can now use WASD
+                    (or arrows) to move around. Hold SHIFT to move 3 pixels
+                    instead of one. You can also use numbers on the keyboard to
+                    switch colors and press SPACE to paint the pixel.
+                  </li>
+                  <li>
+                    If canvas lags on your device, you can zoom in. The more you
+                    are zoomed-in, the fewer pixels your device needs to render,
+                    the faster it is.
+                  </li>
+                  <li>
+                    If you paint the pixel white, it resets the pixel. You won't
+                    see your name on such a pixel, it will become an empty
+                    pixel.
+                  </li>
+                  <li>
+                    If you register, the first part of your email becomes your
+                    username. The username is publicly visible, so feel free to
+                    create a fake account if you don't want to share your email.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
