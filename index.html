@@ -1,0 +1,758 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer="">   
+    </script>
+
+    <title>Live Draw</title>
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            background-color: #575656;
+            overflow: hidden;
+        }
+    
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+    
+        .header {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap; /* Prevent buttons from wrapping */
+        }
+    
+        #colorSelector,
+        #emojiSelector {
+            padding: 0.5rem 1rem;
+            border: 1px solid white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #575656;
+            background-color: black;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+    
+        .color-options,
+        .emoji-options {
+            display: none;
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            padding: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            max-width: 90vw; /* Make it responsive */
+            max-height: 50vh; /* Limit height for smaller screens */
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+    
+        .color-option,
+        .emoji-option {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 5px;
+            border: 1px solid #000;
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+    
+        #drawingCanvas {
+            background-color: white;
+            border: 3px solid #000;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    
+        .toggle-draw-btn,
+        .toggle-mode-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid black;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 5px;
+            color: white;
+        }
+    
+        .toggle-draw-btn {
+            background-color: red;
+        }
+    
+        .toggle-mode-btn {
+            background-color: #575656;
+        }
+    
+        .loading-text {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            color: white;
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 5px;
+            z-index: 5;
+        }
+    
+        #captchaContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    
+        .zoom-controls {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    
+        .zoom-controls button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid black;
+            border-radius: 5px;
+            margin: 0.25rem 0;
+            cursor: pointer;
+            font-size: 0.8rem; /* Smaller font for smaller screens */
+        }
+    
+        .zoom-controls button:hover {
+            background-color: #45a049;
+        }
+    
+        .zoom-controls button:active {
+            background-color: #388e3c;
+        }
+        .draw-style-controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    
+        @media (max-width: 768px) {
+            .header {
+                top: 5px;
+                gap: 5px;
+            }
+    
+            #colorSelector,
+            #emojiSelector {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+    
+            .color-options,
+            .emoji-options {
+                top: 40px;
+                padding: 0.3rem;
+            }
+    
+            .toggle-draw-btn,
+            .toggle-mode-btn {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+    
+            .loading-text {
+                top: 50px;
+                font-size: 0.9rem;
+            }
+    
+            .zoom-controls button {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+    
+        @media (max-width: 480px) {
+            .header {
+                top: 5px;
+                gap: 3px;
+            }
+    
+            #colorSelector,
+            #emojiSelector {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.6rem;
+            }
+    
+            .color-options,
+            .emoji-options {
+                top: 35px;
+                padding: 0.2rem;
+            }
+    
+            .toggle-draw-btn,
+            .toggle-mode-btn {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.7rem;
+            }
+    
+            .loading-text {
+                top: 45px;
+                font-size: 0.8rem;
+            }
+    
+            .zoom-controls button {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+    </style>
+
+<style type="text/css" id="operaUserStyle"></style></head>
+
+<body>
+
+    <input type="hidden" name="csrfmiddlewaretoken" value="lyED25z0OhGhzY7cVpjrNHN4hb9Avj0XhQGQ3AUrvYFbfmPjvbGTSVe74iKrLIfr">
+
+    <div id="captchaContainer" style="display: none;">
+        <div id="myWidget"><div><input type="hidden" name="cf-turnstile-response" id="cf-chl-widget-fpdm3_response" value="0.TmdMv-0pVyU6QVK2ALFaUJpsSNaHxWCY2sCx2guLEtEuL3Yqn0-V9zdMCUXmVT5vJmtJS3FfcmMQ2YoP6XdXe68IrbfcjMyU9klXK3qsvyLtPcZigYw6ivwqd8d-pwQXRHM4MRUfyDoBhECKe7SGnoLxeJ-IaLtcECGkTE0d5FWkQv6Pk-Rftyjvd1R58PB15rAhbLZ8vlzxGS4GsZjrrs0e5yNU3Ggj5avcL-YN3tZCRzxNb0etqseOIrxAlVMLvLz837UjqtFR1Wv3htKqwXrO3iO8FhEI7V0COffNduiGy6YYwvN4clGy-l2N4ME4eVdx1ZpABTBOYY20nxeJkl5qGvU88J8m-_U1dgF7rQMXVenQzFo2AA6Fs3DKGZvvOHir0vHL8ATXlhiInDniaim2AKJswbbDTUuSTbHShni9FXkeDNqAoroPALiRX1l5eMdM44QC21vdlCE7gcSmGoKWe7zveFrSuZMOZYk7-U9_CEyCg-Zbg6Ahk1jpp-R8nLzKPmArHB8Svt8ZSl0Sb0F8uIq075vOypjCjG3IGeirvRgLnsRy5mfwvq8vd9RLDpSkcwRRe9RdVvt3AKHxRwdvNxiAOhVTftvf4x_JfHDYE0oHXVFDzWTiuYCUExtg0ogFV9zU9tP5lAa_fWGWCzONoH0myKngyoqvaFwMmOuBSPdXstr6HWd85OL4TehbfQUc_BJDfF8WHnvqVvJj8wqSDme_tysK5-O-CIst250t79Z9xR4E1ay9T1qVOEHIMCuaUkyaa--3F4XZdApLJiffg294SxSp_aDo_l6Cg-Of9UevRU4VwxuUDKqSXDZU.eckuW9E2Iwggt9tMOjjroA.6bb5e8be128db1844a2bcdd53f316b876ef06bf7030bfeb6164194dbdeae9c32"></div></div>
+    </div>
+
+    <div id="mainContent" style="display: block;">
+
+        <!-- Header for controls -->
+        <div class="header" id="headerContent" style="display: block;">
+            
+            <!-- Toggle drawing button -->
+            <button id="toggleDrawButton" class="toggle-draw-btn">Draw: OFF</button>
+            
+            <!-- Toggle drawing pixel or multi button -->
+            <button id="drawModeButton" class="toggle-mode-btn">Pixel</button>
+
+        </div>
+
+        <!-- draw style Controls -->
+        <div class="draw-style-controls">
+
+            <!-- Color selector dropdown button -->
+            <button id="colorSelector">V</button>
+            <!-- Color options for the dropdown -->
+            <div class="color-options" id="colorOptions">
+                <div class="color-option" style="background-color: black;" data-color="black"></div>
+                <div class="color-option" style="background-color: white;" data-color="white"></div>
+                <div class="color-option" style="background-color: red;" data-color="red"></div>
+                <div class="color-option" style="background-color: green;" data-color="green"></div>
+                <div class="color-option" style="background-color: yellow;" data-color="yellow"></div>
+                <div class="color-option" style="background-color: orange;" data-color="orange"></div>
+                <div class="color-option" style="background-color: blue;" data-color="blue"></div>
+                <div class="color-option" style="background-color: pink;" data-color="pink"></div>
+                <div class="color-option" style="background-color: purple;" data-color="purple"></div>
+                <div class="color-option" style="background-color: brown;" data-color="brown"></div>
+                <div class="color-option" style="background-color: gray;" data-color="gray"></div>
+                <div class="color-option" style="background-color: cyan;" data-color="cyan"></div>
+                <div class="color-option" style="background-color: magenta;" data-color="magenta"></div>
+                <div class="color-option" style="background-color: lime;" data-color="lime"></div>
+                <div class="color-option" style="background-color: violet;" data-color="violet"></div>
+                <div class="color-option" style="background-color: beige;" data-color="beige"></div>
+                <div class="color-option" style="background-color: teal;" data-color="teal"></div>
+                <div class="color-option" style="background-color: coral;" data-color="coral"></div>
+                <div class="color-option" style="background-color: navy;" data-color="navy"></div>
+                <div class="color-option" style="background-color: gold;" data-color="gold"></div>
+                <div class="color-option" style="background-color: salmon;" data-color="salmon"></div>
+                <div class="color-option" style="background-color: lavender;" data-color="lavender"></div>
+            </div>
+
+            <!-- Color selector dropdown button -->
+            <button id="emojiSelector">V</button>
+            <!-- Emoji options for the dropdown -->
+            <div class="emoji-options" id="emojiOptions">
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="😊">😊</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="😂">😂</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="❤️">❤️</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="👍">👍</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🌟">🌟</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🔥">🔥</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="😎">😎</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🎉">🎉</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="💡">💡</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="✔️">✔️</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="💔">💔</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="👏">👏</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🎈">🎈</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="💀">💀</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🌈">🌈</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🌍">🌍</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🌸">🌸</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🐶">🐶</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🐱">🐱</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🦄">🦄</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🚀">🚀</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🎵">🎵</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🏆">🏆</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="⚽">⚽</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🍕">🍕</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🍩">🍩</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🍓">🍓</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🥳">🥳</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="😢">😢</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="😡">😡</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🤔">🤔</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🙌">🙌</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🎂">🎂</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🌞">🌞</div>
+                <div class="emoji-option" style="font-size: 24px;" data-emoji="🤩">🤩</div>                
+            </div>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div class="zoom-controls">
+            <button id="zoomOutButton">–</button>
+            <button id="resetZoomButton">||</button>
+            <button id="zoomInButton">+</button>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" class="loading-text" style="display: none;">Loading previous drawings...</div>
+
+        <!-- Canvas for drawing -->
+        <div class="container" id="canvasContainer">
+            <canvas id="drawingCanvas" width="3200" height="2500" style="transform: translate(-1264px, -2181px) scale(1);"></canvas>
+        </div>
+
+    </div>
+
+    <script>
+        let captchaVerified = false;  // Variable to track CAPTCHA validation status
+    
+        if (window.location.hostname !== "127.0.0.1") {
+            // Initialize Turnstile CAPTCHA
+            window.onloadTurnstileCallback = function () {
+                turnstile.render("#myWidget", {
+                    sitekey: "0x4AAAAAAA0K0GtvRGzgHbCX",  
+                    callback: function (token) {
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        // Send the CAPTCHA token to the backend for verification
+                        fetch('/verify-captcha/', {
+                            method: 'POST',
+                            body: JSON.stringify({ token: token }),
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken 
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // CAPTCHA validated successfully, allow WebSocket and drawing
+                                captchaVerified = true;
+    
+                                // Hide the CAPTCHA container and show main content
+                                document.getElementById("captchaContainer").style.display = "none";
+                                document.getElementById("mainContent").style.display = "block";
+    
+                                initialiseApp();
+                            } else {
+                                // If CAPTCHA validation fails, alert the user
+                                alert("CAPTCHA verification failed. Please try again.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error during CAPTCHA verification");
+                            alert("An error occurred during CAPTCHA verification.");
+                        });
+                    }
+                });
+            };
+        } else {
+            console.log("Running on localhost");
+            document.getElementById("mainContent").style.display = "block";
+            initialiseApp();  
+        }
+    
+        function initialiseApp() {   
+            const canvas = document.getElementById('drawingCanvas'); // Get the canvas element
+            const ctx = canvas.getContext('2d'); // Get the 2D drawing context
+            const squareSize = 10;  // Size of the square
+            let currentColor = 'black';  // Current color for the square
+            let page = 1;  // Current page for chunked data loading
+            let loading = false;  // Indicates whether data is currently being loaded
+            let drawEnabled = false;  // State to toggle drawing on or off
+            const canvasContainer = document.getElementById('canvasContainer');
+            let isPanning = false; // Indicates if panning is in progress
+            let startX, startY, offsetX = 0, offsetY = 0; // For panning
+            let scale = 1; // Initial scale for zoom
+            const scaleFactor = 1.1; // Scale factor for zooming
+            let drawMode = "pixel"; // "pixel" or "multi"
+            let isDrawing = false; // For tracking continuous drawing in "multi" mode
+            let alerted = false;
+            let noCountDown = true;
+
+            const supportedEmojis = [
+                '😊', '😂', '❤️', '👍', '🌟', '🔥', '😎', '🎉', '💡', '✔️',
+                '💔', '👏', '🎈', '💀', '🌈', '🌍', '🌸', '🐶', '🐱', '🦄',
+                '🚀', '🎵', '🏆', '⚽', '🏀', '🏡', '📚', '💻', '📱', '🖼️',
+                '🍎', '🍕', '🍩', '🍓', '🥳', '😢', '😡', '😴', '🤔', '🙌',
+                '🎂', '🌞', '🤩'
+            ];
+    
+            // WebSocket setup for real-time updates
+            const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+            let ws;
+    
+            // Set canvas size to be larger than viewport for panning
+            canvas.width = 3200;
+            canvas.height = 2500;
+            
+            // Update canvas transform (for zoom and pan)
+            function updateCanvasTransform() {
+                canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+            }
+
+            // Draws a square on the canvas
+            function drawSquare(x, y, size, color) {
+                if (supportedEmojis.includes(color)) {
+                    // If the color is an emoji
+                    ctx.font = `${size * 1}px Arial`; // Adjust font size for emojis
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(color, x, y); // Draw emoji at the position
+                } else {
+                    // Otherwise, draw a colored square
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x - size / 2, y - size / 2, size, size);
+                }
+            }
+    
+            // Function to show the loading indicator
+            function showLoadingIndicator() {
+                loadingIndicator.style.display = 'block';
+            }
+    
+            // Function to hide the loading indicator
+            function hideLoadingIndicator() {
+                loadingIndicator.style.display = 'none';
+                headerContent.style.display = 'block';
+            }
+    
+            // Load initial drawing data in chunks
+            function loadDrawingDataChunk() {
+                if (loading) return;
+                loading = true;
+                showLoadingIndicator(); // Show the indicator while loading
+                fetch(`/drawing-data-chunks/?page=${page}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.data.length > 0) {
+                            data.data.forEach(square => {
+                                drawSquare(square.x, square.y, squareSize, square.c);
+                            });
+                            page++;
+                        }
+                        loading = false;
+                        if (data.has_next) {
+                            loadDrawingDataChunk();
+                        } else {
+                            // All chunks are loaded, initialize WebSocket
+                            initializeWebSocket();
+                            hideLoadingIndicator(); // Hide the indicator when loading is complete
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading drawing data.');
+                        loading = false;
+                    });
+            }
+
+            // Function to show the countdown in the loading indicator
+            function showCountdown(waitTime) {
+                let remainingTime = waitTime;
+            
+                showLoadingIndicator(); // Ensure the loading indicator is visible
+                loadingIndicator.textContent = `Please wait: ${remainingTime}s`; // Set the initial countdown text
+            
+                const countdownInterval = setInterval(() => {
+                    remainingTime -= 1; // Decrease remaining time
+                    if (remainingTime > 0) {
+                        loadingIndicator.textContent = `Please wait: ${remainingTime}s`; // Update countdown text
+                    } else {
+                        clearInterval(countdownInterval); // Stop the countdown
+                        noCountDown = true
+                        alerted = false
+                        hideLoadingIndicator(); // Hide the loading indicator
+                    }
+                }, 1000); // Update every second
+            }
+    
+            function initializeWebSocket() {
+                // Initialize WebSocket connection
+                ws = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/drawing/');
+                
+                // Define WebSocket event handlers
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+    
+                    if (data.error) {
+                        drawEnabled = false;
+                        toggleDrawButton.textContent = `Draw: OFF`;
+                        toggleDrawButton.style.backgroundColor = 'red';
+
+                        // Show countdown if wait_time is available
+                        if (data.wait_time_int) {
+                            noCountDown = false
+                            showCountdown(data.wait_time_int);
+                        }
+
+                        if (alerted === false) {
+                            alerted = true;
+                            alert(`${data.error} ${data.wait_time || ''}`);
+                            return;
+                        }
+                        
+                        return;
+                    }
+    
+                    // Draw the received square
+                    drawSquare(data.x, data.y, squareSize, data.c);
+                };
+            }
+    
+            loadDrawingDataChunk();  // Start loading data on page load
+    
+            // Handle drawing squares
+            function drawAtPosition(event) {
+                if (!drawEnabled) return;
+            
+                // Prevent drawing if zoomed in or out
+                if (scale !== 1) {
+                    drawEnabled = false;
+                    toggleDrawButton.textContent = `Draw: OFF`;
+                    toggleDrawButton.style.backgroundColor = 'red';
+                    alert("Drawing is disabled while zoomed in or out. Please reset the zoom to draw.");
+                    return;
+                }
+            
+                let x, y;
+                if (event.touches) {
+                    // Handle touch events
+                    const touch = event.touches[0];
+                    const rect = canvas.getBoundingClientRect();
+                    x = Math.round(touch.clientX - rect.left);
+                    y = Math.round(touch.clientY - rect.top);
+                } else {
+                    // Handle mouse events
+                    const rect = canvas.getBoundingClientRect();
+                    x = Math.round(event.clientX - rect.left);
+                    y = Math.round(event.clientY - rect.top);
+                }
+
+                // Check if the coordinates are within the bounds of the canvas
+                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) {
+                    return; 
+                }
+            
+                drawSquare(x, y, squareSize, currentColor); // Draw square locally
+            
+                // Send square data to the server
+                ws.send(JSON.stringify({ x, y, c: currentColor }));
+            }
+            
+            // Toggle between "Pixel" and "Multi" modes
+            document.getElementById('drawModeButton').addEventListener('click', () => {
+                drawMode = drawMode === "pixel" ? "multi" : "pixel";
+                const button = document.getElementById('drawModeButton');
+                button.textContent = `${drawMode.charAt(0).toUpperCase() + drawMode.slice(1)}`;
+            });
+
+            // Mouse event listeners
+            canvas.addEventListener('mousedown', (event) => {
+                if (drawMode === "pixel") {
+                    drawAtPosition(event); // Single square drawing
+                } else if (drawMode === "multi") {
+                    isDrawing = true;
+                    drawAtPosition(event); // Start drawing
+                }
+            });
+
+            canvas.addEventListener('mousemove', (event) => {
+                if (drawMode === "multi" && isDrawing) {
+                    drawAtPosition(event); // Continuous drawing
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                if (drawMode === "multi") {
+                    isDrawing = false; // Stop drawing
+                }
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                if (drawMode === "multi") {
+                    isDrawing = false; // Stop drawing if mouse leaves canvas
+                }
+            });
+
+            // Touch event listeners
+            canvas.addEventListener('touchstart', (event) => {
+                if (drawMode === "pixel") {
+                    event.preventDefault(); // Prevent scrolling while drawing
+                    drawAtPosition(event); // Single square drawing
+                } else if (drawMode === "multi") {
+                    isDrawing = true;
+                    drawAtPosition(event); // Start drawing
+                }
+            });
+
+            canvas.addEventListener('touchmove', (event) => {
+                if (drawMode === "multi" && isDrawing) {
+                    event.preventDefault(); // Prevent scrolling while drawing
+                    drawAtPosition(event); // Continuous drawing
+                }
+            });
+
+            canvas.addEventListener('touchend', () => {
+                if (drawMode === "multi") {
+                    isDrawing = false; // Stop drawing
+                }
+            });
+
+            canvas.addEventListener('touchcancel', () => {
+                if (drawMode === "multi") {
+                    isDrawing = false; // Stop drawing if touch is canceled
+                }
+            });
+    
+            // **Toggle drawing mode**
+            toggleDrawButton.addEventListener('click', () => {
+                if(noCountDown === true){
+                    drawEnabled = !drawEnabled;
+                    toggleDrawButton.textContent = `Draw: ${drawEnabled ? "ON" : "OFF"}`;
+                    toggleDrawButton.style.backgroundColor = drawEnabled ? 'green' : 'red';
+                }
+            });
+    
+            // **Toggle color options**
+            colorSelector.addEventListener('click', () => {
+                colorOptions.style.display = colorOptions.style.display === 'block' ? 'none' : 'block';
+            });
+    
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    currentColor = option.getAttribute('data-color');
+                    colorSelector.style.backgroundColor = currentColor;
+                    colorOptions.style.display = 'none';
+                });
+            });
+
+            // **Toggle Emoji options**
+            emojiSelector.addEventListener('click', () => {
+                emojiOptions.style.display = emojiOptions.style.display === 'block' ? 'none' : 'block';
+            });
+    
+            document.querySelectorAll('.emoji-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    currentColor = option.getAttribute('data-emoji');
+                    emojiSelector.style.backgroundColor = ""; 
+                    emojiSelector.textContent = currentColor;
+                    emojiOptions.style.display = 'none';
+                });
+            });
+    
+            // Panning Functionality
+            canvasContainer.addEventListener('mousedown', (event) => {
+                if (!drawEnabled) {
+                    isPanning = true;
+                    startX = event.clientX - offsetX;
+                    startY = event.clientY - offsetY;
+                }
+            });
+
+            canvasContainer.addEventListener('mousemove', (event) => {
+                if (isPanning) {
+                    offsetX = event.clientX - startX;
+                    offsetY = event.clientY - startY;
+                    updateCanvasTransform(); // Apply pan
+                }
+            });
+
+            canvasContainer.addEventListener('mouseup', () => isPanning = false);
+            canvasContainer.addEventListener('mouseleave', () => isPanning = false);
+
+            // Touch Panning (Mobile/Tablet)
+            canvasContainer.addEventListener('touchstart', (event) => {
+                if (!drawEnabled) {
+                    const touch = event.touches[0];
+                    isPanning = true;
+                    startX = touch.clientX - offsetX;
+                    startY = touch.clientY - offsetY;
+                }
+            });
+
+            canvasContainer.addEventListener('touchmove', (event) => {
+                if (isPanning) {
+                    event.preventDefault(); // Prevent scrolling
+                    const touch = event.touches[0];
+                    offsetX = touch.clientX - startX;
+                    offsetY = touch.clientY - startY;
+                    updateCanvasTransform(); // Apply pan
+                }
+            });
+
+            canvasContainer.addEventListener('touchend', () => isPanning = false);
+            canvasContainer.addEventListener('touchcancel', () => isPanning = false);
+
+            // Zoom In Button
+            document.getElementById('zoomInButton').addEventListener('click', () => {
+                scale *= scaleFactor; // Increase scale
+                updateCanvasTransform(); // Apply transform
+            });
+
+            // Zoom Out Button
+            document.getElementById('zoomOutButton').addEventListener('click', () => {
+                scale /= scaleFactor; // Decrease scale
+                updateCanvasTransform(); // Apply transform
+            });
+
+            // Reset Zoom Button
+            document.getElementById('resetZoomButton').addEventListener('click', () => {
+                scale = 1; // Reset scale
+                offsetX = 0; // Reset panning offset
+                offsetY = 0; // Reset panning offset
+                updateCanvasTransform(); // Apply transform
+            });
+        }
+    </script>
+
+
+
+</body></html>
