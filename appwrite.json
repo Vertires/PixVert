@@ -1,169 +1,185 @@
 {
     "projectId": "pixvertfun",
     "projectName": "pixvert",
-    "collections": [
+    "databases": [
         {
-            "$id": "pixelsPublic",
-            "$read": [
-                "role:all"
-            ],
-            "$write": [],
-            "name": "pixelsPublic",
-            "enabled": true,
-            "permission": "collection",
-            "attributes": [
+            "$id": "pixvertDB",
+            "name": "pixvert",
+            "collections": [
                 {
-                    "key": "createdAt",
-                    "type": "integer",
-                    "status": "available",
-                    "required": false,
-                    "array": false,
-                    "min": -9223372036854776000,
-                    "max": 9223372036854776000,
-                    "default": null
-                },
-                {
-                    "key": "userId",
-                    "type": "string",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "size": 255,
-                    "default": null
-                },
-                {
-                    "key": "hex",
-                    "type": "string",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "size": 6,
-                    "default": null
-                },
-                {
-                    "key": "x",
-                    "type": "integer",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "min": -9223372036854776000,
-                    "max": 9223372036854776000,
-                    "default": null
-                },
-                {
-                    "key": "y",
-                    "type": "integer",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "min": -9223372036854776000,
-                    "max": 9223372036854776000,
-                    "default": null
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "positionIndex",
-                    "type": "unique",
-                    "status": "available",
-                    "attributes": [
-                        "x",
-                        "y"
+                    "$id": "pixelsPublic",
+                    "$read": [
+                        "role:all"
                     ],
-                    "orders": [
-                        "ASC",
-                        "ASC"
+                    "$write": [],
+                    "name": "pixelsPublic",
+                    "enabled": true,
+                    "permission": "collection",
+                    "attributes": [
+                        {
+                            "key": "createdAt",
+                            "type": "integer",
+                            "status": "available",
+                            "required": false,
+                            "array": false,
+                            "min": -9223372036854776000,
+                            "max": 9223372036854776000,
+                            "default": null
+                        },
+                        {
+                            "key": "userId",
+                            "type": "string",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "size": 255,
+                            "default": null
+                        },
+                        {
+                            "key": "hex",
+                            "type": "string",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "size": 6,
+                            "default": null
+                        },
+                        {
+                            "key": "x",
+                            "type": "integer",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "min": -9223372036854776000,
+                            "max": 9223372036854776000,
+                            "default": null
+                        },
+                        {
+                            "key": "y",
+                            "type": "integer",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "min": -9223372036854776000,
+                            "max": 9223372036854776000,
+                            "default": null
+                        }
+                    ],
+                    "indexes": [
+                        {
+                            "key": "positionIndex",
+                            "type": "unique",
+                            "status": "available",
+                            "attributes": [
+                                "x",
+                                "y"
+                            ],
+                            "orders": [
+                                "ASC",
+                                "ASC"
+                            ]
+                        },
+                        {
+                            "key": "fastIndex",
+                            "type": "key",
+                            "status": "available",
+                            "attributes": [
+                                "x",
+                                "y",
+                                "createdAt"
+                            ],
+                            "orders": [
+                                "ASC",
+                                "ASC",
+                                "ASC"
+                            ]
+                        }
                     ]
                 },
                 {
-                    "key": "fastIndex",
-                    "type": "key",
-                    "status": "available",
+                    "$id": "pixelsHistory",
+                    "$read": [],
+                    "$write": [],
+                    "name": "pixelsHistory",
+                    "enabled": true,
+                    "permission": "collection",
                     "attributes": [
-                        "x",
-                        "y",
-                        "createdAt"
+                        {
+                            "key": "userId",
+                            "type": "string",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "size": 255,
+                            "default": null
+                        },
+                        {
+                            "key": "createdAt",
+                            "type": "integer",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "min": -9223372036854776000,
+                            "max": 9223372036854776000,
+                            "default": null
+                        },
+                        {
+                            "key": "y",
+                            "type": "integer",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "min": -9223372036854776000,
+                            "max": 9223372036854776000,
+                            "default": null
+                        },
+                        {
+                            "key": "hex",
+                            "type": "string",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "size": 6,
+                            "default": null
+                        },
+                        {
+                            "key": "x",
+                            "type": "integer",
+                            "status": "available",
+                            "required": true,
+                            "array": false,
+                            "min": -9223372036854776000,
+                            "max": 9223372036854776000,
+                            "default": null
+                        }
                     ],
-                    "orders": [
-                        "ASC",
-                        "ASC",
-                        "ASC"
+                    "indexes": [
+                        {
+                            "key": "userDateIndex",
+                            "type": "key",
+                            "status": "available",
+                            "attributes": [
+                                "userId",
+                                "createdAt"
+                            ],
+                            "orders": [
+                                "ASC",
+                                "ASC"
+                            ]
+                        }
                     ]
                 }
             ]
         },
         {
-            "$id": "pixelsHistory",
-            "$read": [],
-            "$write": [],
-            "name": "pixelsHistory",
-            "enabled": true,
-            "permission": "collection",
-            "attributes": [
-                {
-                    "key": "userId",
-                    "type": "string",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "size": 255,
-                    "default": null
-                },
-                {
-                    "key": "createdAt",
-                    "type": "integer",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "min": -9223372036854776000,
-                    "max": 9223372036854776000,
-                    "default": null
-                },
-                {
-                    "key": "y",
-                    "type": "integer",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "min": -9223372036854776000,
-                    "max": 9223372036854776000,
-                    "default": null
-                },
-                {
-                    "key": "hex",
-                    "type": "string",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "size": 6,
-                    "default": null
-                },
-                {
-                    "key": "x",
-                    "type": "integer",
-                    "status": "available",
-                    "required": true,
-                    "array": false,
-                    "min": -9223372036854776000,
-                    "max": 9223372036854776000,
-                    "default": null
-                }
-            ],
-            "indexes": [
-                {
-                    "key": "userDateIndex",
-                    "type": "key",
-                    "status": "available",
-                    "attributes": [
-                        "userId",
-                        "createdAt"
-                    ],
-                    "orders": [
-                        "ASC",
-                        "ASC"
-                    ]
-                }
-            ]
+            "$id": "6772b12d0038c672d795",
+            "name": "Canvas",
+            "enabled": true
+        },
+        {
+            "$id": "x",
+            "name": "x",
+            "enabled": true
         }
     ],
     "functions": [
@@ -227,5 +243,34 @@
                 "mockNumbers": []
             }
         }
-    }
+    },
+    "collections": [
+        {
+            "$id": "6772b12d0038de3cd8be",
+            "databaseId": "6772b12d0038c672d795",
+            "name": "pixelsPublic",
+            "documentSecurity": false,
+            "attributes": [],
+            "indexes": [],
+            "enabled": true
+        },
+        {
+            "$id": "x",
+            "databaseId": "x",
+            "name": "x",
+            "documentSecurity": false,
+            "attributes": [],
+            "indexes": [],
+            "enabled": true
+        },
+        {
+            "$id": "6772b1d80031aef735af",
+            "databaseId": "6772b12d0038c672d795",
+            "name": "pixelsHistory",
+            "documentSecurity": false,
+            "attributes": [],
+            "indexes": [],
+            "enabled": true
+        }
+    ]
 }
