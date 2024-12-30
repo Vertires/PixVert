@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+        var pixels = {};
+      var image = new Image();
+      image.onload = function () {
+        var canvas = document.createElement("canvas");
+        canvas.width = image.width;
+        canvas.height = image.height;
+
+        var context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0);
+
+        var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+        // Now you can access pixel data from imageData.data.
+        // It's a one-dimensional array of RGBA values.
+        // Here's an example of how to get a pixel's color at (x,y)
+
+        for (let x = 0; x < canvas.width; x++) {
+          for (let y = 0; y < canvas.width; y++) {
+            var index = (y * imageData.width + x) * 4;
+            var red = imageData.data[index];
+            var green = imageData.data[index + 1];
+            var blue = imageData.data[index + 2];
+
+            // 240 46 101
+            if(red === 240 && green === 46 && blue === 101) {
+                pixels[`${x}_${y}`] = '#f02e65';
+            }
+          }
+        }
+
+        console.log(JSON.stringify(pixels));
+      };
+      image.src =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyAQMAAACQ++z9AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRF////8C5l1tk8VQAAALJJREFUeJy90TEOwjAMAEBbGVKm8ALgIUjwpI4MSESIgV/wlTwlT+iYAdW4VeLESNkQXqpTXbu2Af4SZoJr1X62FEREL5okkTjeRTay5yLnOZeKdgAnIp915KokRS+cTBSzRiV+WpKGcW2ZhWFVEp2xI6PlhyfIbxu/fbQ63PvvNkOjgFCFLNW9Kz3Dl8Z12jK73ovemd6nA7jVXduAzR1Mcs2NlpvU+3EN19zWJpTPfh4fM0aEqQczLxMAAAAASUVORK5CYII=";
+    </script>
+  </body>
+</html>

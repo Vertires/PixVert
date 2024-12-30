@@ -1,0 +1,6 @@
+node_modules
+.env
+frames
+output.mp4
+ffmpeg.txt
+pixels.json
