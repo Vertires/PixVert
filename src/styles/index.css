@@ -40,8 +40,8 @@ body {
   height: 90vh; /* Set height to the same percentage to maintain square aspect */
   display: grid;
   margin: 0 auto;
-  grid-template-columns: repeat(216, 1fr);  /* 216 columns */
-  grid-template-rows: repeat(216, 1fr);     /* 216 rows */
+  grid-template-columns: repeat(auto-fill, minmax(10px, 1fr)); /* Auto-fill with a minimum cell size */
+  grid-template-rows: repeat(auto-fill, minmax(10px, 1fr));     /* Same for rows */
   aspect-ratio: 1;  /* Ensures the grid stays square */
   max-width: 90vh;  /* Limit the width to maintain square shape */
   max-height: 90vh; /* Limit the height to maintain square shape */
