@@ -39,16 +39,17 @@ body {
 
 /* Canvas */
 .Canvas {
-  width: 90vmin; /* Use vmin to ensure it's always square */
-  height: 90vmin; /* Use vmin to ensure it's always square */
   display: grid;
+  grid-template-columns: repeat(216, 1fr); /* Adjust to match the number of squares */
+  grid-template-rows: repeat(216, 1fr);
+  aspect-ratio: 1; /* Maintain a perfect square */
+  width: 90vmin; /* Limit width and height using the smallest viewport dimension */
+  height: 90vmin;
+  max-width: 90vh;
+  max-height: 90vh;
   margin: 0 auto;
-  grid-template-columns: repeat(216, 1fr);  /* 216 columns */
-  grid-template-rows: repeat(216, 1fr);     /* 216 rows */
-  aspect-ratio: 1;  /* Ensures the grid stays square */
-  max-width: 90vmin;  /* Limit the width to maintain square shape */
-  max-height: 90vmin; /* Limit the height to maintain square shape */
 }
+
 
 /* Loading */
 .Loading {
@@ -65,11 +66,12 @@ body {
 
 /* Square */
 .Square {
-  width: 100%; /* Make the square take up the full grid cell */
-  height: 100%; /* Ensure the height is 100% of the grid cell */
-  border: 1px solid #07070714;
+  width: 100%; /* Take up the full grid cell */
+  height: 100%;
+  border: 1px solid #07070714; /* Ensure consistent borders */
   transition: background-color 0.3s ease;
 }
+
 
 .Square:hover {
   background-color: var(--squareBgColor) !important;
