@@ -35,14 +35,16 @@ body {
 }
 
 /* Canvas */
-.Canvas{
+.Canvas {
   width: 90vh;
   height: 90vh;
   display: grid;
   margin: 0 auto;
-  grid-template-columns: repeat(80,1fr);
-  grid-template-rows: repeat(80,1fr);
+  grid-template-columns: repeat(216, 1fr);  /* 216 columns */
+  grid-template-rows: repeat(216, 1fr);     /* 216 rows */
+  aspect-ratio: 1;  /* Ensures the grid stays square */
 }
+
 
 /* Loading */
 .Loading{
