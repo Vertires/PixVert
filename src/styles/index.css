@@ -29,23 +29,25 @@ body {
 }
 
 .Board {
-  width: 100vw;
-  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
   margin-top: 10vh;
 }
 
 /* Canvas */
 .Canvas {
-  width: 90vh; /* Set width to a percentage of viewport height */
-  height: 90vh; /* Set height to the same percentage to maintain square aspect */
+  width: 90vmin; /* Use vmin to ensure it's always square */
+  height: 90vmin; /* Use vmin to ensure it's always square */
   display: grid;
   margin: 0 auto;
-  grid-template-columns: repeat(auto-fill, minmax(10px, 1fr)); /* Auto-fill with a minimum cell size */
-  grid-template-rows: repeat(auto-fill, minmax(10px, 1fr));     /* Same for rows */
+  grid-template-columns: repeat(216, 1fr);  /* 216 columns */
+  grid-template-rows: repeat(216, 1fr);     /* 216 rows */
   aspect-ratio: 1;  /* Ensures the grid stays square */
-  max-width: 90vh;  /* Limit the width to maintain square shape */
-  max-height: 90vh; /* Limit the height to maintain square shape */
-  position: relative;
+  max-width: 90vmin;  /* Limit the width to maintain square shape */
+  max-height: 90vmin; /* Limit the height to maintain square shape */
 }
 
 /* Loading */
