@@ -16,7 +16,7 @@ function Board({userData}) {
     const [loading, setLoading] = useState(true);
 
     function initCanvas(){
-        if (userData.uid==="Mtmma7pFXpWJsFEeIAUbN22aZkB3") {
+        if (userData.uid==="a3HxhJsItwV61MZfrSKIY6Wbnk13") {
             range.map((n) => {
                 WriteData(realtime,`6400_board/${n}`,{
                     id: n,
