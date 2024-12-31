@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Microbe&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-*{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -15,12 +15,12 @@ body {
   font-size: 12px;
 }
 
-:root{
+:root {
   --squareBgColor: #ff4500;
   --textColor: whitesmoke;
 }
 
-.Container{
+.Container {
   display: grid;
   place-items: center;
   height: 100vh;
@@ -28,7 +28,7 @@ body {
   background-color: rgb(86, 148, 255);
 }
 
-.Board{
+.Board {
   width: 100vw;
   height: 100vh;
   margin-top: 10vh;
@@ -36,8 +36,8 @@ body {
 
 /* Canvas */
 .Canvas {
-  width: 90vh;
-  height: 90vh;
+  width: 90vh; /* Using vh for height */
+  height: 90vh; /* Ensure height and width are equal for a square */
   display: grid;
   margin: 0 auto;
   grid-template-columns: repeat(216, 1fr);  /* 216 columns */
@@ -45,33 +45,38 @@ body {
   aspect-ratio: 1;  /* Ensures the grid stays square */
 }
 
-
 /* Loading */
-.Loading{
-  width:80vh;
-  height:80vh;
+.Loading {
+  width: 80vh;
+  height: 80vh;
   display: grid;
   place-items: center;
 }
-.Loading_Text{
+
+.Loading_Text {
   font-size: 2em;
   color: var(--textColor);
 }
 
 /* Square */
-.Square{
+.Square {
+  width: 100%; /* Make the square take up the full grid cell */
+  height: 100%; /* Ensure the height is 100% of the grid cell */
   border: 1px solid #07070714;
+  transition: background-color 0.3s ease;
 }
-.Square:hover{
+
+.Square:hover {
   background-color: var(--squareBgColor) !important;
 }
 
-.Profile{
+/* Profile */
+.Profile {
   display: flex;
   flex-direction: row;
   gap: 10px;
   padding: 5px;
-  align-items: center;  
+  align-items: center;
   justify-content: center;
   color: var(--textColor);
 }
@@ -80,7 +85,8 @@ body {
   color: var(--textColor);
 }
 
-.Tools{
+/* Tools */
+.Tools {
   display: grid;
   place-items: center;
   position: sticky;
@@ -91,7 +97,7 @@ body {
   background-color: rgb(0, 94, 255);
 }
 
-.Auth-Button{
+.Auth-Button {
   border: none;
   color: var(--textColor);
   background-color: transparent;
@@ -102,16 +108,17 @@ body {
   cursor: pointer;
 }
 
-.Palette{
-  display:flex;
+/* Palette */
+.Palette {
+  display: flex;
   justify-content: center;
   padding: 5px;
 }
-.Palette-item{
+
+.Palette-item {
   margin: 2px;
   width: 15px;
   height: 15px;
   border: 1px solid rgb(215, 221, 255);
   border-radius: 50%;
 }
-
