@@ -40,14 +40,14 @@ body {
 /* Canvas */
 .Canvas {
   display: grid;
-  grid-template-columns: repeat(216, 1fr); /* Adjust to match the number of squares */
-  grid-template-rows: repeat(216, 1fr);
-  aspect-ratio: 1; /* Maintain a perfect square */
-  width: 90vmin; /* Limit width and height using the smallest viewport dimension */
-  height: 90vmin;
-  max-width: 90vh;
-  max-height: 90vh;
-  margin: 0 auto;
+  grid-template-columns: repeat(150, 1fr); /* 150 columns */
+  grid-template-rows: repeat(150, 1fr);   /* 150 rows */
+  aspect-ratio: 1;                       /* Keep the grid square */
+  width: 100%;                           /* Use full container width */
+  height: auto;                          /* Adjust height to maintain aspect ratio */
+  max-width: 90vmin;                     /* Limit to fit viewport */
+  max-height: 90vmin;                    /* Limit height for no overflow */
+  margin: 0 auto;                        /* Center the grid */
 }
 
 
@@ -66,9 +66,9 @@ body {
 
 /* Square */
 .Square {
-  width: 100%; /* Take up the full grid cell */
-  height: 100%;
-  border: 1px solid #07070714; /* Ensure consistent borders */
+  width: 100%;                           /* Fully occupy grid cell */
+  height: 100%;                          /* Fully occupy grid cell */
+  border: 1px solid #07070714;           /* Border for grid lines */
   transition: background-color 0.3s ease;
 }
 
