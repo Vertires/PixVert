@@ -36,13 +36,16 @@ body {
 
 /* Canvas */
 .Canvas {
-  width: 90vh; /* Using vh for height */
-  height: 90vh; /* Ensure height and width are equal for a square */
+  width: 90vh; /* Set width to a percentage of viewport height */
+  height: 90vh; /* Set height to the same percentage to maintain square aspect */
   display: grid;
   margin: 0 auto;
   grid-template-columns: repeat(216, 1fr);  /* 216 columns */
   grid-template-rows: repeat(216, 1fr);     /* 216 rows */
   aspect-ratio: 1;  /* Ensures the grid stays square */
+  max-width: 90vh;  /* Limit the width to maintain square shape */
+  max-height: 90vh; /* Limit the height to maintain square shape */
+  position: relative;
 }
 
 /* Loading */
