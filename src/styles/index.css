@@ -94,15 +94,19 @@ body {
 
 /* Tools */
 .Tools {
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center; /* Centers content horizontally */
+  align-items: center; /* Centers content vertically */
   position: sticky;
   top: 0;
-  padding: 5px;
+  left: 0; /* Ensures alignment to the left */
   width: 100%;
+  margin: 0; /* Removes any extra margins */
+  padding: 10px; /* Adjust padding if necessary */
   color: var(--textColor);
   background-color: rgb(0, 94, 255);
 }
+
 
 .Auth-Button {
   border: none;
