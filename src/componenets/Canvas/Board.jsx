@@ -10,7 +10,7 @@ import Tools from '../Tools/Tools';
 import { TransformWrapper, TransformComponent } from "@tiendeo/react-zoom-pan-pinch";
 
 function Board({userData}) {
-    const range = [...Array(6400).keys()];
+    const range = [...Array(22500).keys()];
     const [currentColor, setCurrentColor] = useState(colors.c1);
     const [colorMap, setColorMap] = useState([])
     const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ function Board({userData}) {
     function initCanvas(){
         if (userData.uid==="a3HxhJsItwV61MZfrSKIY6Wbnk13") {
             range.map((n) => {
-                WriteData(realtime,`6400_board/${n}`,{
+                WriteData(realtime,`22500_board/${n}`,{
                     id: n,
                     color: "white",
                     lastModifier: "",
@@ -30,7 +30,7 @@ function Board({userData}) {
     }
 
     function CanvasListener() {
-        const dbRef = ref(realtime, "6400_board")
+        const dbRef = ref(realtime, "22500_board")
         onValue(dbRef, (snapshot) => {
             const data = Object.values(snapshot.val())
             setColorMap(data)
@@ -39,7 +39,7 @@ function Board({userData}) {
     }
 
     function updateSquare(id, color){
-        WriteData(realtime,`6400_board/${id}`,{
+        WriteData(realtime,`22500_board/${id}`,{
             id: id,
             color: color,
             lastModifierEmail: userData.email,
